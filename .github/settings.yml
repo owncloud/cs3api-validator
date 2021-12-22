@@ -2,7 +2,7 @@
 _extends: gh-labels
 
 repository:
-  name: ocis
+  name: cs3api-validator
   description: 'End-to-End Test Suite for the CS3 APIs'
   homepage: https://owncloud.dev/cs3api-validator/
   topics: reva, ocis, cs3Apis
