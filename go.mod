@@ -2,7 +2,10 @@ module cs3api-validator
 
 go 1.17
 
-require github.com/cucumber/godog v0.12.2
+require (
+	github.com/cucumber/godog v0.12.2
+	github.com/spf13/pflag v1.0.5
+)
 
 require (
 	github.com/cucumber/gherkin-go/v19 v19.0.3 // indirect
@@ -11,5 +14,4 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
 	github.com/hashicorp/go-memdb v1.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 )

@@ -1,5 +1,5 @@
 Feature: list home space
-  In order to store files
+  To store files
   As a consumer of the cs3api
   I need to be able obtain my personal space
 
