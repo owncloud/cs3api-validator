@@ -1,9 +1,9 @@
 Feature: list home space
-  To store files
   As a consumer of the cs3api
-  I need to be able obtain my personal space
+  I want to obtain my personal space
+  So that I can store files
 
   Scenario: Simple Login
-    Given a personal space was created for user admin
-    When I call listStorage Spaces
-    Then there should be one personal space in the response
+    Given user "admin" has created a personal space
+    When user "admin" lists all available spaces
+    Then one personal space should be listed in the response

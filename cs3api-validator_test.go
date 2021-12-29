@@ -18,15 +18,15 @@ func init() {
 	godog.BindCommandLineFlags("godog.", &opts) // godog v0.11.0 and later
 }
 
-func aPersonalSpaceWasCreatedForUserAdmin() error {
+func userHasCreatedAPersonalSpace(user string) error {
 	return godog.ErrPending
 }
 
-func iCallListStorageSpaces() error {
+func userListsAllAvailableSpaces(user string) error {
 	return godog.ErrPending
 }
 
-func thereShouldBeOnePersonalSpaceInTheResponse() error {
+func onePersonalSpaceShuoldBeListedInTheResponse() error {
 	return godog.ErrPending
 }
 
@@ -34,9 +34,9 @@ func InitializeTestSuite(sc *godog.TestSuiteContext) {
 }
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
-	ctx.Step(`^a personal space was created for user admin$`, aPersonalSpaceWasCreatedForUserAdmin)
-	ctx.Step(`^I call listStorage Spaces$`, iCallListStorageSpaces)
-	ctx.Step(`^there should be one personal space in the response$`, thereShouldBeOnePersonalSpaceInTheResponse)
+	ctx.Step(`^user "([^"]*)" has created a personal space$`, userHasCreatedAPersonalSpace)
+	ctx.Step(`^user "([^"]*)" lists all available spaces$`, userListsAllAvailableSpaces)
+	ctx.Step(`^one personal space should be listed in the response$`, onePersonalSpaceShuoldBeListedInTheResponse)
 }
 
 func TestMain(m *testing.M) {
