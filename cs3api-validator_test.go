@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	gateway "github.com/cs3org/go-cs3apis/cs3/gateway/v1beta1"
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
 	"github.com/spf13/pflag"
@@ -18,15 +19,24 @@ func init() {
 	godog.BindCommandLineFlags("godog.", &opts) // godog v0.11.0 and later
 }
 
-func userHasCreatedAPersonalSpace(user string) error {
+type User struct {
+	RevaToken string
+}
+
+type FeatureContext struct {
+	Client gateway.GatewayAPIClient
+	Users  []User
+}
+
+func (f *FeatureContext) userHasCreatedAPersonalSpace(user string) error {
 	return godog.ErrPending
 }
 
-func userListsAllAvailableSpaces(user string) error {
+func (f *FeatureContext) userListsAllAvailableSpaces(user string) error {
 	return godog.ErrPending
 }
 
-func onePersonalSpaceShuoldBeListedInTheResponse() error {
+func (f *FeatureContext) onePersonalSpaceShuoldBeListedInTheResponse() error {
 	return godog.ErrPending
 }
 
@@ -34,9 +44,10 @@ func InitializeTestSuite(sc *godog.TestSuiteContext) {
 }
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
-	ctx.Step(`^user "([^"]*)" has created a personal space$`, userHasCreatedAPersonalSpace)
-	ctx.Step(`^user "([^"]*)" lists all available spaces$`, userListsAllAvailableSpaces)
-	ctx.Step(`^one personal space should be listed in the response$`, onePersonalSpaceShuoldBeListedInTheResponse)
+	f := &FeatureContext{}
+	ctx.Step(`^user "([^"]*)" has created a personal space$`, f.userHasCreatedAPersonalSpace)
+	ctx.Step(`^user "([^"]*)" lists all available spaces$`, f.userListsAllAvailableSpaces)
+	ctx.Step(`^one personal space should be listed in the response$`, f.onePersonalSpaceShuoldBeListedInTheResponse)
 }
 
 func TestMain(m *testing.M) {
