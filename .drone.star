@@ -117,10 +117,17 @@ def tests(ctx):
 		'name': 'test-acceptance-cs3api',
 		'steps': [
 			{
+				"name": "wait-for-ocis",
+				"image": "owncloudci/wait-for:latest",
+				"commands": [
+					"wait-for -it ocis:9200 -t 300",
+				],
+			},
+			{
 				"name": "test",
 				"image": "owncloudci/golang:1.17",
 				"commands": [
-					"go test -v",
+					"go test --endpoint=ocis:9142 -v",
 				],
 				"volumes": [
 					{
@@ -130,6 +137,7 @@ def tests(ctx):
 				],
 			},
 		],
+		'services': ocisService(),
 		'depends_on': [],
 		'trigger': {
 			'ref': [
@@ -145,3 +153,23 @@ def tests(ctx):
 	pipelines.append(result)
 
 	return pipelines
+
+def ocisService():
+	return [{
+		"name": "ocis",
+		"image": "owncloud/ocis:latest",
+		"pull": "always",
+		"detach": True,
+		"environment": {
+			"OCIS_URL": "https://ocis:9200",
+			"STORAGE_HOME_DRIVER": "ocis",
+			"STORAGE_USERS_DRIVER": "ocis",
+			"PROXY_OIDC_INSECURE": "true",
+			"PROXY_ENABLE_BASIC_AUTH": True,
+			"OCIS_LOG_LEVEL": "error",
+			"STORAGE_GATEWAY_GRPC_ADDR": "0.0.0.0:9142"
+		},
+		"commands": [
+			"ocis server",
+			],
+	}]

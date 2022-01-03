@@ -14,7 +14,7 @@ import (
 	"github.com/cs3org/reva/pkg/rgrpc/todo/pool"
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
-	"github.com/spf13/pflag"
+	flag "github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -24,8 +24,10 @@ var opts = godog.Options{
 	Format: "pretty", // can define default values
 }
 
+var Endpoint string
+
 func init() {
-	godog.BindCommandLineFlags("godog.", &opts) // godog v0.11.0 and later
+	godog.BindCommandLineFlags("godog.", &opts)
 }
 
 type User struct {
@@ -150,7 +152,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	var err error
 	f := &FeatureContext{}
 	f.Users = make(map[string]User)
-	f.Client, err = pool.GetGatewayServiceClient("localhost:9142")
+	f.Client, err = pool.GetGatewayServiceClient(Endpoint)
 	if err != nil {
 		print("error")
 	}
@@ -162,8 +164,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func TestMain(m *testing.M) {
-	pflag.Parse()
-	opts.Paths = pflag.Args()
+	flag.StringVar(&Endpoint, "endpoint", "localhost:9142", "Endpoint Url and port of a running cs3 implementation")
+	flag.Parse()
+	opts.Paths = flag.Args()
 
 	status := godog.TestSuite{
 		Name:                 "cs3api-validator",
