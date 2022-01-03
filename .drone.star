@@ -11,11 +11,11 @@ config = {
 
 def main(ctx):
 	before = beforePipelines(ctx)
-	if (before == False):
+	if not before:
 		print('Errors detected. Review messages above.')
 		return []
 	stages = stagePipelines(ctx)
-	if (stages == False):
+	if not stages:
 		print('Errors detected. Review messages above.')
 		return []
 	dependsOn(before, stages)
@@ -86,11 +86,11 @@ def linting(ctx):
 		'name': 'lint',
 		'steps': [
 			{
-			"name": "validate-go",
-			"image": "golangci/golangci-lint:latest",
-			"commands": [
-				"golangci-lint run -v",
-			]
+				"name": "validate-go",
+				"image": "golangci/golangci-lint:latest",
+				"commands": [
+					"golangci-lint run -v",
+				]
 			},
 		],
 		'depends_on': [],
@@ -171,5 +171,5 @@ def ocisService():
 		},
 		"commands": [
 			"ocis server",
-			],
+		],
 	}]
