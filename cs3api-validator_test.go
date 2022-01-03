@@ -24,17 +24,20 @@ var opts = godog.Options{
 	Format: "pretty", // can define default values
 }
 
+// GRPC Endpoint of a running CS3 implementation
 var Endpoint string
 
 func init() {
 	godog.BindCommandLineFlags("godog.", &opts)
 }
 
+// User for remembering in the feature context
 type User struct {
 	RevaToken string
 	User *userv1beta1.User
 }
 
+// FeatureContext holds values which are used across test steps
 type FeatureContext struct {
 	Client   gateway.GatewayAPIClient
 	Users    map[string]User
@@ -42,6 +45,7 @@ type FeatureContext struct {
 	Spaces []*providerv1beta1.StorageSpace
 }
 
+// Use this step before running a scenario, the access token is stored
 func (f *FeatureContext) userHasLoggedIn(user string, pass string) error {
 	req := &gateway.AuthenticateRequest{
 		Type:         "basic",
@@ -156,11 +160,36 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	if err != nil {
 		print("error")
 	}
-
+	// Deprovision all storage spaces after the scenario
+	ctx.After(f.deleteSpacesAfterScenario)
+	// Step implementations
 	ctx.Step(`^user "([^"]*)" has logged in with password "([^"]*)"$`, f.userHasLoggedIn)
 	ctx.Step(`^user "([^"]*)" has created a personal space$`, f.userHasCreatedAPersonalSpace)
 	ctx.Step(`^user "([^"]*)" lists all available spaces$`, f.userListsAllAvailableSpaces)
 	ctx.Step(`^one personal space should be listed in the response$`, f.onePersonalSpaceShouldBeListedInTheResponse)
+}
+
+func(f *FeatureContext) deleteSpacesAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+	// Todo Deprovision storage spaces as soon as implemented
+	//reqctx, err := f.getAuthContext("admin")
+	//if err != nil {
+	//	return ctx, err
+	//}
+	//for _, sp := range f.Spaces {
+	//	resp, err := f.Client.DeleteStorageSpace(reqctx, &providerv1beta1.DeleteStorageSpaceRequest{Id: sp.Id})
+	//	if err != nil {
+	//		return ctx, err
+	//	}
+	//	if delresp, ok := interface{}(resp).(*providerv1beta1.DeleteStorageSpaceResponse); ok {
+	//		if delresp.Status.Code != rpc.Code_CODE_OK {
+	//			return ctx, formatError(resp.Status)
+	//		}
+	//		return ctx, err
+	//	} else {
+	//		return ctx, fmt.Errorf("did not receive a valid response: %v", resp)
+	//	}
+	//}
+	return ctx, nil
 }
 
 func TestMain(m *testing.M) {
