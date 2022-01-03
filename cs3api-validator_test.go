@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	gateway "github.com/cs3org/go-cs3apis/cs3/gateway/v1beta1"
+	userv1beta1 "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	ctxpkg "github.com/cs3org/reva/pkg/ctx"
@@ -29,17 +30,19 @@ func init() {
 
 type User struct {
 	RevaToken string
+	User *userv1beta1.User
 }
 
 type FeatureContext struct {
 	Client   gateway.GatewayAPIClient
 	Users    map[string]User
 	Response interface{}
+	Spaces []*providerv1beta1.StorageSpace
 }
 
-func (f *FeatureContext) loginUser(authType string, user string, pass string) error {
+func (f *FeatureContext) userHasLoggedIn(user string, pass string) error {
 	req := &gateway.AuthenticateRequest{
-		Type:         authType,
+		Type:         "basic",
 		ClientId:     user,
 		ClientSecret: pass,
 	}
@@ -53,44 +56,91 @@ func (f *FeatureContext) loginUser(authType string, user string, pass string) er
 	if res.Status.Code != rpc.Code_CODE_OK {
 		return formatError(res.Status)
 	}
-	f.Users[user] = User{ RevaToken: res.Token}
-	return nil
+	f.Users[user] = User{
+		RevaToken: res.Token,
+		User: res.User,
+	}
+
+	err = assertExpectedAndActual(assert.Equal, res.User.Username, user)
+	return err
 }
 
 func formatError(status *rpc.Status) error {
 	return fmt.Errorf("error: code=%+v msg=%q support_trace=%q", status.Code, status.Message, status.Trace)
 }
 
-func (f *FeatureContext) getAuthContext(u string) context.Context {
+func (f *FeatureContext) getAuthContext(u string) (context.Context, error) {
 	ctx := context.Background()
+	if _, ok := f.Users[u]; !ok {
+		return ctx, fmt.Errorf("user %s needs to login before the first test step", u)
+	}
 	ctx = ctxpkg.ContextSetToken(ctx, f.Users[u].RevaToken)
 	ctx = metadata.AppendToOutgoingContext(ctx, ctxpkg.TokenHeader, f.Users[u].RevaToken)
-	return ctx
+	return ctx, nil
 }
 
 func (f *FeatureContext) userHasCreatedAPersonalSpace(user string) error {
 	var err error
-	ctx := f.getAuthContext(user)
-	f.Response, err = f.Client.CreateStorageSpace(ctx, &providerv1beta1.CreateStorageSpaceRequest{Type: "personal", Name: "Einstein"})
+	ctx, err := f.getAuthContext(user)
 	if err != nil {
 		return err
 	}
-	if resp, ok := f.Response.(*providerv1beta1.CreateStorageSpaceResponse); ok {
+	f.Response, err = f.Client.CreateHome(ctx, &providerv1beta1.CreateHomeRequest{})
+	if err != nil {
+		return err
+	}
+	if resp, ok := f.Response.(*providerv1beta1.CreateHomeResponse); ok {
 		if resp.Status.Code != rpc.Code_CODE_OK {
 			return formatError(resp.Status)
 		}
-		return assertExpectedAndActual(assert.Equal, resp.StorageSpace.Name, "Einstein")
+		return nil
 	} else {
 		return fmt.Errorf("did not receive a valid response: %v", resp)
 	}
 }
 
 func (f *FeatureContext) userListsAllAvailableSpaces(user string) error {
-	return godog.ErrPending
+	var err error
+	ctx, err := f.getAuthContext(user)
+	if err != nil {
+		return err
+	}
+	f.Response, err = f.Client.ListStorageSpaces(ctx, &providerv1beta1.ListStorageSpacesRequest{})
+	if err != nil {
+		return err
+	}
+	if resp, ok := f.Response.(*providerv1beta1.ListStorageSpacesResponse); ok {
+		if resp.Status.Code != rpc.Code_CODE_OK {
+			return formatError(resp.Status)
+		}
+		f.Spaces = resp.StorageSpaces
+		//GreaterOrEqual compares the second arg with the first
+		err = assertExpectedAndActual(assert.GreaterOrEqual, len(f.Spaces), 1)
+		return err
+	} else {
+		return fmt.Errorf("did not receive a valid response: %v", resp)
+	}
 }
 
-func (f *FeatureContext) onePersonalSpaceShuoldBeListedInTheResponse() error {
-	return godog.ErrPending
+func (f *FeatureContext) onePersonalSpaceShouldBeListedInTheResponse() error {
+	var err error
+	var personalSpaces []*providerv1beta1.StorageSpace
+	if resp, ok := f.Response.(*providerv1beta1.ListStorageSpacesResponse); ok {
+		if resp.Status.Code != rpc.Code_CODE_OK {
+			return formatError(resp.Status)
+		}
+		f.Spaces = resp.StorageSpaces
+
+		for _, s := range f.Spaces {
+			if s.SpaceType == "personal" {
+				personalSpaces = append(personalSpaces, s)
+			}
+		}
+		err = assertExpectedAndActual(assert.Equal, 1 , len(personalSpaces))
+		return err
+	} else {
+		return fmt.Errorf("no valid response from former requests available: %v", resp)
+	}
 }
 
 func InitializeTestSuite(sc *godog.TestSuiteContext) {
@@ -104,13 +154,11 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	if err != nil {
 		print("error")
 	}
-	err = f.loginUser("basic", "einstein", "relativity")
-	if err != nil {
-		print(fmt.Sprintf("Error during login: %s", err.Error()))
-	}
+
+	ctx.Step(`^user "([^"]*)" has logged in with password "([^"]*)"$`, f.userHasLoggedIn)
 	ctx.Step(`^user "([^"]*)" has created a personal space$`, f.userHasCreatedAPersonalSpace)
 	ctx.Step(`^user "([^"]*)" lists all available spaces$`, f.userListsAllAvailableSpaces)
-	ctx.Step(`^one personal space should be listed in the response$`, f.onePersonalSpaceShuoldBeListedInTheResponse)
+	ctx.Step(`^one personal space should be listed in the response$`, f.onePersonalSpaceShouldBeListedInTheResponse)
 }
 
 func TestMain(m *testing.M) {

@@ -3,6 +3,9 @@ Feature: list home space
   I want to obtain my personal space
   So that I can store files
 
+  Background: User Login
+    Given user "admin" has logged in with password "admin"
+
   Scenario: Simple Login
     Given user "admin" has created a personal space
     When user "admin" lists all available spaces
