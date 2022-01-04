@@ -24,7 +24,7 @@ var opts = godog.Options{
 	Format: "pretty", // can define default values
 }
 
-// GRPC Endpoint of a running CS3 implementation
+// Endpoint GRPC address of a running CS3 implementation
 var Endpoint string
 
 func init() {
@@ -45,7 +45,7 @@ type FeatureContext struct {
 	Spaces []*providerv1beta1.StorageSpace
 }
 
-// Use this step before running a scenario, the access token is stored
+// userHasLoggedIn can be used before running a scenario, the access token is stored
 func (f *FeatureContext) userHasLoggedIn(user string, pass string) error {
 	req := &gateway.AuthenticateRequest{
 		Type:         "basic",
@@ -75,6 +75,8 @@ func formatError(status *rpc.Status) error {
 	return fmt.Errorf("error: code=%+v msg=%q support_trace=%q", status.Code, status.Message, status.Trace)
 }
 
+// getAuthContext uses the access token from the Feature Context
+// to create a context for the cs3api request
 func (f *FeatureContext) getAuthContext(u string) (context.Context, error) {
 	ctx := context.Background()
 	if _, ok := f.Users[u]; !ok {
@@ -149,9 +151,6 @@ func (f *FeatureContext) onePersonalSpaceShouldBeListedInTheResponse() error {
 	}
 }
 
-func InitializeTestSuite(sc *godog.TestSuiteContext) {
-}
-
 func InitializeScenario(ctx *godog.ScenarioContext) {
 	var err error
 	f := &FeatureContext{}
@@ -169,6 +168,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^one personal space should be listed in the response$`, f.onePersonalSpaceShouldBeListedInTheResponse)
 }
 
+// deleteSpacesAfterScenario deletes all spaces which have been created after running the scenario
 func(f *FeatureContext) deleteSpacesAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 	// Todo Deprovision storage spaces as soon as implemented
 	//reqctx, err := f.getAuthContext("admin")
@@ -199,7 +199,6 @@ func TestMain(m *testing.M) {
 
 	status := godog.TestSuite{
 		Name:                 "cs3api-validator",
-		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options:              &opts,
 	}.Run()
@@ -224,7 +223,7 @@ type expectedAndActualAssertion func(t assert.TestingT, expected, actual interfa
 
 // assertActual is a helper function to allow the step function to call
 // assertion functions where you want to compare an actual value to a
-// predined state like nil, empty or true/false.
+// predefined state like nil, empty or true/false.
 //func assertActual(a actualAssertion, actual interface{}, msgAndArgs ...interface{}) error {
 //	var t asserter
 //	a(&t, actual, msgAndArgs...)
