@@ -164,8 +164,6 @@ def ocisService():
 			"OCIS_URL": "https://ocis:9200",
 			"STORAGE_HOME_DRIVER": "ocis",
 			"STORAGE_USERS_DRIVER": "ocis",
-			"PROXY_OIDC_INSECURE": "true",
-			"PROXY_ENABLE_BASIC_AUTH": True,
 			"OCIS_LOG_LEVEL": "error",
 			"STORAGE_GATEWAY_GRPC_ADDR": "0.0.0.0:9142"
 		},
