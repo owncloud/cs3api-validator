@@ -34,7 +34,7 @@ func init() {
 // User for remembering in the feature context
 type User struct {
 	RevaToken string
-	User *userv1beta1.User
+	User      *userv1beta1.User
 }
 
 // FeatureContext holds values which are used across test steps
@@ -42,7 +42,7 @@ type FeatureContext struct {
 	Client   gateway.GatewayAPIClient
 	Users    map[string]User
 	Response interface{}
-	Spaces []*providerv1beta1.StorageSpace
+	Spaces   []*providerv1beta1.StorageSpace
 }
 
 // userHasLoggedIn can be used before running a scenario, the access token is stored
@@ -64,7 +64,7 @@ func (f *FeatureContext) userHasLoggedIn(user string, pass string) error {
 	}
 	f.Users[user] = User{
 		RevaToken: res.Token,
-		User: res.User,
+		User:      res.User,
 	}
 
 	err = assertExpectedAndActual(assert.Equal, res.User.Username, user)
@@ -144,7 +144,7 @@ func (f *FeatureContext) onePersonalSpaceShouldBeListedInTheResponse() error {
 				personalSpaces = append(personalSpaces, s)
 			}
 		}
-		err = assertExpectedAndActual(assert.Equal, 1 , len(personalSpaces))
+		err = assertExpectedAndActual(assert.Equal, 1, len(personalSpaces))
 		return err
 	} else {
 		return fmt.Errorf("no valid response from former requests available: %v", resp)
@@ -169,7 +169,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 // deleteSpacesAfterScenario deletes all spaces which have been created after running the scenario
-func(f *FeatureContext) deleteSpacesAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+func (f *FeatureContext) deleteSpacesAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 	// Todo Deprovision storage spaces as soon as implemented
 	//reqctx, err := f.getAuthContext("admin")
 	//if err != nil {
@@ -198,9 +198,9 @@ func TestMain(m *testing.M) {
 	opts.Paths = flag.Args()
 
 	status := godog.TestSuite{
-		Name:                 "cs3api-validator",
-		ScenarioInitializer:  InitializeScenario,
-		Options:              &opts,
+		Name:                "cs3api-validator",
+		ScenarioInitializer: InitializeScenario,
+		Options:             &opts,
 	}.Run()
 
 	// Optional: Run `testing` package's logic besides godog.
