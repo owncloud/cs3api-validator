@@ -10,6 +10,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	f.Init()
 
 	// Deprovision all storage spaces after the scenario
+	ctx.After(f.deletePublicShares)
 	ctx.After(f.deleteSpacesAfterScenario)
 	ctx.After(f.deleteResourcesAfterScenario)
 	ctx.After(f.emptyTrashAfterScenario)
