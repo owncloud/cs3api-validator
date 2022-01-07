@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	gatewayv1beta1 "github.com/cs3org/go-cs3apis/cs3/gateway/v1beta1"
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	linkv1beta1 "github.com/cs3org/go-cs3apis/cs3/sharing/link/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
@@ -82,9 +83,9 @@ func (f *PublicShareFeatureContext) UserListsAllResourcesInThePublicshare(user, 
 		return err
 	}
 
-	token, ok := f.PublicSharesToken[publicShare]
-	if !ok {
-		return fmt.Errorf("publicshare \"%s\" is not known", publicShare)
+	token, err := f.GetPublicShareToken(publicShare)
+	if err != nil {
+		return err
 	}
 
 	publicShareResp, err := f.Client.GetPublicShareByToken(
@@ -128,9 +129,9 @@ func (f *PublicShareFeatureContext) UserHasUploadedAnEmptyFileToThePublicshare(u
 		return err
 	}
 
-	token, ok := f.PublicSharesToken[publicShare]
-	if !ok {
-		return fmt.Errorf("publicshare \"%s\" is not known", publicShare)
+	token, err := f.GetPublicShareToken(publicShare)
+	if err != nil {
+		return err
 	}
 
 	publicShareResp, err := f.Client.GetPublicShareByToken(
@@ -147,12 +148,6 @@ func (f *PublicShareFeatureContext) UserHasUploadedAnEmptyFileToThePublicshare(u
 		return helpers.FormatError(publicShareResp.Status)
 	}
 
-	// TODO: how can one access the share through the public storage provider?
-	//publicShareResp.Share.ResourceId.StorageId = "e1a73ede-549b-4226-abdf-40e69ca8230d"
-
-	// TODO: how to do this without magic?
-	path := "/public/" + token + "/" + filename
-
 	// TODO: switch to TouchFile when implemented in REVA
 	//resp, err := f.Client.TouchFile(
 	//	ctx,
@@ -163,6 +158,12 @@ func (f *PublicShareFeatureContext) UserHasUploadedAnEmptyFileToThePublicshare(u
 	//		},
 	//	},
 	//)
+
+	// TODO: how can one access the share through the public storage provider?
+	//publicShareResp.Share.ResourceId.StorageId = "e1a73ede-549b-4226-abdf-40e69ca8230d"
+
+	// TODO: how to do this without magic?
+	path := "/public/" + token + "/" + filename
 
 	resp, err := f.Client.InitiateFileUpload(
 		ctx,
@@ -180,32 +181,26 @@ func (f *PublicShareFeatureContext) UserHasUploadedAnEmptyFileToThePublicshare(u
 		return helpers.FormatError(resp.Status)
 	}
 
-	var endpoint string
-	var transportToken string
+	var simpleProto *gatewayv1beta1.FileUploadProtocol
 
 	for _, proto := range resp.GetProtocols() {
 		if proto.Protocol == "simple" {
-			endpoint = proto.GetUploadEndpoint()
-			transportToken = proto.Token
+			simpleProto = proto
 			break
 		}
 	}
 
-	if endpoint == "" {
+	if simpleProto == nil {
 		return errors.New("given CS3 api endpoint doesn't support the simple upload protocol")
 	}
 
-	req, err := http.NewRequest(http.MethodPut, endpoint, bytes.NewReader([]byte("")))
+	req, err := http.NewRequest(http.MethodPut, simpleProto.GetUploadEndpoint(), bytes.NewReader([]byte("")))
 	if err != nil {
 		return err
 	}
+	req.Header.Add(constants.TokenTransportHeader, simpleProto.GetToken())
 
-	// TODO: how do I know this for a generic CS3 api implementation?
-	// TokenTransportHeader holds the header key for the reva transfer token
-	TokenTransportHeader := "X-Reva-Transfer"
-	req.Header.Add(TokenTransportHeader, transportToken)
-
-	// TODO: noooooo!
+	// TODO: remove me when public link uploads also have a token
 	req.Header.Add(constants.TokenHeader, f.Users[user].RevaToken)
 
 	uploadResponse, err := f.HTTPClient.Do(req)

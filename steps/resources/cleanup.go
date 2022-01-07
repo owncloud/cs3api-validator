@@ -64,6 +64,7 @@ func (f *ResourcesFeatureContext) EmptyTrashAfterScenario(ctx context.Context, s
 			continue
 		}
 
+		//TODO: oCIS FS -> why do we still have blobs on disk?
 		_, _ = f.Client.PurgeRecycle(
 			reqctx,
 			&providerv1beta1.PurgeRecycleRequest{

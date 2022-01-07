@@ -58,8 +58,7 @@ func (f *ResourcesFeatureContext) UserHasCreatedAResourceOfTypeInTheHomeDirector
 		if err != nil {
 			return err
 		}
-		// TODO: why does the container already exist?
-		if createResp.Status.Code != rpc.Code_CODE_OK && createResp.Status.Code != rpc.Code_CODE_ALREADY_EXISTS {
+		if createResp.Status.Code != rpc.Code_CODE_OK {
 			return helpers.FormatError(createResp.Status)
 		}
 
@@ -75,8 +74,7 @@ func (f *ResourcesFeatureContext) UserHasCreatedAResourceOfTypeInTheHomeDirector
 		if err != nil {
 			return err
 		}
-		// TODO: why does the container already exist?
-		if createResp.Status.Code != rpc.Code_CODE_OK && createResp.Status.Code != rpc.Code_CODE_ALREADY_EXISTS {
+		if createResp.Status.Code != rpc.Code_CODE_OK {
 			return helpers.FormatError(createResp.Status)
 		}
 
