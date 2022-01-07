@@ -1,4 +1,4 @@
-package main
+package spaces
 
 import (
 	"errors"
@@ -6,11 +6,12 @@ import (
 
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
+	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
 )
 
-func (f *FeatureContext) userHasCreatedAPersonalSpace(user string) error {
-	ctx, err := f.getAuthContext(user)
+func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpace(user string) error {
+	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
@@ -23,7 +24,7 @@ func (f *FeatureContext) userHasCreatedAPersonalSpace(user string) error {
 		return err
 	}
 	if resp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(resp.Status)
+		return helpers.FormatError(resp.Status)
 	}
 
 	f.Response = resp
@@ -31,8 +32,8 @@ func (f *FeatureContext) userHasCreatedAPersonalSpace(user string) error {
 	return nil
 }
 
-func (f *FeatureContext) userListsAllAvailableSpaces(user string) error {
-	ctx, err := f.getAuthContext(user)
+func (f *SpacesFeatureContext) UserListsAllAvailableSpaces(user string) error {
+	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func (f *FeatureContext) userListsAllAvailableSpaces(user string) error {
 		return err
 	}
 	if resp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(resp.Status)
+		return helpers.FormatError(resp.Status)
 	}
 
 	f.Response = resp
@@ -54,7 +55,7 @@ func (f *FeatureContext) userListsAllAvailableSpaces(user string) error {
 
 }
 
-func (f *FeatureContext) onePersonalSpaceShouldBeListedInTheResponse() error {
+func (f *SpacesFeatureContext) OnePersonalSpaceShouldBeListedInTheResponse() error {
 	if f.Response == nil {
 		return errors.New("no response available")
 	}
@@ -70,5 +71,5 @@ func (f *FeatureContext) onePersonalSpaceShouldBeListedInTheResponse() error {
 			personalSpaces = append(personalSpaces, s)
 		}
 	}
-	return assertExpectedAndActual(assert.Equal, 1, len(personalSpaces))
+	return helpers.AssertExpectedAndActual(assert.Equal, 1, len(personalSpaces))
 }

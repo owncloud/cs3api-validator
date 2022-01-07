@@ -1,4 +1,4 @@
-package main
+package publicshare
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 )
 
 // deletePublicShares empties the trash for all users after running the scenario
-func (f *FeatureContext) deletePublicShares(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+func (f *PublicShareFeatureContext) DeletePublicShares(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 
-	for u, _ := range f.Users {
-		reqctx, err := f.getAuthContext(u)
+	for u := range f.Users {
+		reqctx, err := f.GetAuthContext(u)
 		if err != nil {
 			continue
 		}

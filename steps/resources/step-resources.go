@@ -1,4 +1,4 @@
-package main
+package resources
 
 import (
 	"fmt"
@@ -6,11 +6,12 @@ import (
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	"github.com/cs3org/reva/pkg/utils"
+	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
 )
 
-func (f *FeatureContext) userHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheAlias(user, resourceName, resourceType, resourceAlias string) error {
-	ctx, err := f.getAuthContext(user)
+func (f *ResourcesFeatureContext) UserHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheAlias(user, resourceName, resourceType, resourceAlias string) error {
+	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
@@ -23,7 +24,7 @@ func (f *FeatureContext) userHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheA
 		return err
 	}
 	if homeRes.Status.Code != rpc.Code_CODE_OK {
-		return formatError(homeRes.Status)
+		return helpers.FormatError(homeRes.Status)
 	}
 
 	statHome, err := f.Client.Stat(
@@ -38,7 +39,7 @@ func (f *FeatureContext) userHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheA
 		return err
 	}
 	if statHome.Status.Code != rpc.Code_CODE_OK {
-		return formatError(statHome.Status)
+		return helpers.FormatError(statHome.Status)
 	}
 
 	resourceRef := &providerv1beta1.Reference{
@@ -59,7 +60,7 @@ func (f *FeatureContext) userHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheA
 		}
 		// TODO: why does the container already exist?
 		if createResp.Status.Code != rpc.Code_CODE_OK && createResp.Status.Code != rpc.Code_CODE_ALREADY_EXISTS {
-			return formatError(createResp.Status)
+			return helpers.FormatError(createResp.Status)
 		}
 
 		f.Response = createResp
@@ -76,7 +77,7 @@ func (f *FeatureContext) userHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheA
 		}
 		// TODO: why does the container already exist?
 		if createResp.Status.Code != rpc.Code_CODE_OK && createResp.Status.Code != rpc.Code_CODE_ALREADY_EXISTS {
-			return formatError(createResp.Status)
+			return helpers.FormatError(createResp.Status)
 		}
 
 		f.Response = createResp
@@ -96,16 +97,16 @@ func (f *FeatureContext) userHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheA
 	return nil
 }
 
-func (f *FeatureContext) noResourceShouldBeListedInTheResponse() error {
+func (f *ResourcesFeatureContext) NoResourceShouldBeListedInTheResponse() error {
 	list, ok := f.Response.(*providerv1beta1.ListContainerResponse)
 	if !ok {
 		return fmt.Errorf("expected to receive a ListContainerResponse but got something different")
 	}
 
-	return assertExpectedAndActual(assert.Equal, 0, len(list.Infos))
+	return helpers.AssertExpectedAndActual(assert.Equal, 0, len(list.Infos))
 }
 
-func (f *FeatureContext) resourceOfTypeShouldBeListedInTheResponse(number int, resourceType string) error {
+func (f *ResourcesFeatureContext) ResourceOfTypeShouldBeListedInTheResponse(number int, resourceType string) error {
 	list, ok := f.Response.(*providerv1beta1.ListContainerResponse)
 	if !ok {
 		return fmt.Errorf("expected to receive a ListContainerResponse but got something different")
@@ -129,5 +130,5 @@ func (f *FeatureContext) resourceOfTypeShouldBeListedInTheResponse(number int, r
 		}
 	}
 
-	return assertExpectedAndActual(assert.Equal, number, matchingResources)
+	return helpers.AssertExpectedAndActual(assert.Equal, number, matchingResources)
 }

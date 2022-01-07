@@ -1,4 +1,4 @@
-package main
+package resources
 
 import (
 	"context"
@@ -9,15 +9,15 @@ import (
 )
 
 // deleteResourcesAfterScenario deletes resources which have been created after running the scenario
-func (f *FeatureContext) deleteResourcesAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+func (f *ResourcesFeatureContext) DeleteResourcesAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 
 	resourcesToDelete := f.CreatedResourceReferences
 
 	// we don't now which user has access to which reference,
 	// therefore we just try to delete each reference with all users
 
-	for u, _ := range f.Users {
-		reqctx, err := f.getAuthContext(u)
+	for u := range f.Users {
+		reqctx, err := f.GetAuthContext(u)
 		if err != nil {
 			continue
 		}
@@ -47,10 +47,10 @@ func (f *FeatureContext) deleteResourcesAfterScenario(ctx context.Context, sc *g
 }
 
 // emptyTrashAfterScenario empties the trash for all users after running the scenario
-func (f *FeatureContext) emptyTrashAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
+func (f *ResourcesFeatureContext) EmptyTrashAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 
 	for u, _ := range f.Users {
-		reqctx, err := f.getAuthContext(u)
+		reqctx, err := f.GetAuthContext(u)
 		if err != nil {
 			continue
 		}

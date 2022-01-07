@@ -1,4 +1,4 @@
-package main
+package publicshare
 
 import (
 	"bytes"
@@ -9,10 +9,12 @@ import (
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	linkv1beta1 "github.com/cs3org/go-cs3apis/cs3/sharing/link/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
+	"github.com/owncloud/cs3api-validator/constants"
+	"github.com/owncloud/cs3api-validator/helpers"
 )
 
-func (f *FeatureContext) userHasCreatedAPublicshareWithEditorPermissionsOfTheResourceWithTheAlias(user, publicshare, resourceAlias string) error {
-	ctx, err := f.getAuthContext(user)
+func (f *PublicShareFeatureContext) UserHasCreatedAPublicshareWithEditorPermissionsOfTheResourceWithTheAlias(user, publicshare, resourceAlias string) error {
+	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
@@ -32,7 +34,7 @@ func (f *FeatureContext) userHasCreatedAPublicshareWithEditorPermissionsOfTheRes
 		return err
 	}
 	if statResp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(statResp.Status)
+		return helpers.FormatError(statResp.Status)
 	}
 
 	resp, err := f.Client.CreatePublicShare(
@@ -63,7 +65,7 @@ func (f *FeatureContext) userHasCreatedAPublicshareWithEditorPermissionsOfTheRes
 		return err
 	}
 	if resp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(resp.Status)
+		return helpers.FormatError(resp.Status)
 	}
 
 	f.PublicSharesToken[publicshare] = resp.Share.Token
@@ -74,8 +76,8 @@ func (f *FeatureContext) userHasCreatedAPublicshareWithEditorPermissionsOfTheRes
 
 }
 
-func (f *FeatureContext) userListsAllResourcesInThePublicshare(user, publicShare string) error {
-	ctx, err := f.getAuthContext(user)
+func (f *PublicShareFeatureContext) UserListsAllResourcesInThePublicshare(user, publicShare string) error {
+	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
@@ -96,7 +98,7 @@ func (f *FeatureContext) userListsAllResourcesInThePublicshare(user, publicShare
 		return err
 	}
 	if publicShareResp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(publicShareResp.Status)
+		return helpers.FormatError(publicShareResp.Status)
 	}
 
 	resp, err := f.Client.ListContainer(
@@ -111,7 +113,7 @@ func (f *FeatureContext) userListsAllResourcesInThePublicshare(user, publicShare
 		return err
 	}
 	if resp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(resp.Status)
+		return helpers.FormatError(resp.Status)
 	}
 
 	f.Response = resp
@@ -120,8 +122,8 @@ func (f *FeatureContext) userListsAllResourcesInThePublicshare(user, publicShare
 
 }
 
-func (f *FeatureContext) userHasUploadedAnEmptyFileToThePublicshare(user, filename, publicShare string) error {
-	ctx, err := f.getAuthContext(user)
+func (f *PublicShareFeatureContext) UserHasUploadedAnEmptyFileToThePublicshare(user, filename, publicShare string) error {
+	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
@@ -142,7 +144,7 @@ func (f *FeatureContext) userHasUploadedAnEmptyFileToThePublicshare(user, filena
 		return err
 	}
 	if publicShareResp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(publicShareResp.Status)
+		return helpers.FormatError(publicShareResp.Status)
 	}
 
 	// TODO: how can one access the share through the public storage provider?
@@ -175,7 +177,7 @@ func (f *FeatureContext) userHasUploadedAnEmptyFileToThePublicshare(user, filena
 		return err
 	}
 	if resp.Status.Code != rpc.Code_CODE_OK {
-		return formatError(resp.Status)
+		return helpers.FormatError(resp.Status)
 	}
 
 	var endpoint string
@@ -204,7 +206,7 @@ func (f *FeatureContext) userHasUploadedAnEmptyFileToThePublicshare(user, filena
 	req.Header.Add(TokenTransportHeader, transportToken)
 
 	// TODO: noooooo!
-	req.Header.Add(TokenHeader, f.Users[user].RevaToken)
+	req.Header.Add(constants.TokenHeader, f.Users[user].RevaToken)
 
 	uploadResponse, err := f.HTTPClient.Do(req)
 	if err != nil {
