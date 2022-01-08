@@ -11,7 +11,7 @@
 
 **This tool will receive a lot of changes before version 1.0.0**
 
-The cs3api-validator is a tool to test implementations of the [CS3Apis](https://github.com/cs3org/cs3apis). It works as a standalone software which only needs the address of a running cs3api provider.
+The cs3api-validator is a tool to test implementations of the [CS3Apis](https://github.com/cs3org/cs3apis). It works as standalone software which only needs the address of a running cs3api provider.
 
 ## Purpose
 
@@ -143,7 +143,7 @@ Execute the tests ``./cs3qpi-validator.test --endpoint=your-addr:port``
 
 ### Use tags
 
-You can use [tags](https://github.com/cucumber/godog#tags) to filter features which should be exectuted. `--godog.tags=<expression>`
+You can use [tags](https://github.com/cucumber/godog#tags) to filter features which should be executed. `--godog.tags=<expression>`
 
 ## License
 
