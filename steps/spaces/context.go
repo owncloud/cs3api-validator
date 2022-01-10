@@ -10,11 +10,13 @@ type SpacesFeatureContext struct {
 	*featurecontext.FeatureContext
 }
 
-func NewSpacesFeatureContext(fc *featurecontext.FeatureContext) *SpacesFeatureContext {
-	return &SpacesFeatureContext{FeatureContext: fc}
+func NewSpacesFeatureContext(fc *featurecontext.FeatureContext, sc *godog.ScenarioContext) *SpacesFeatureContext {
+	spc := &SpacesFeatureContext{FeatureContext: fc}
+	spc.Register(sc)
+	return spc
 }
 
-func (f *SpacesFeatureContext) RegisterSteps(sc *godog.ScenarioContext) {
+func (f *SpacesFeatureContext) Register(sc *godog.ScenarioContext){
 	// steps
 	sc.Step(`^user "([^"]*)" has created a personal space$`, f.UserHasCreatedAPersonalSpace)
 	sc.Step(`^user "([^"]*)" lists all available spaces$`, f.UserListsAllAvailableSpaces)

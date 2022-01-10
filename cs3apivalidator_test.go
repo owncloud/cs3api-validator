@@ -32,7 +32,7 @@ func TestMain(m *testing.M) {
 	opts.Paths = flag.Args()
 
 	status := godog.TestSuite{
-		Name:                "cs3api-validator",
+		Name:                "cs3apiValidator",
 		ScenarioInitializer: scenario.InitializeScenario(Endpoint, HTTPinsecure),
 		Options:             &opts,
 	}.Run()

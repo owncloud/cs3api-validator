@@ -19,27 +19,23 @@ type featureContext struct {
 	*spaces.SpacesFeatureContext
 }
 
+type StepsRegistrar interface {
+	Register(*godog.ScenarioContext)
+}
+
 // newFeatureContext returns a new feature context for the scenario initialization
 // and makes sure that all contexts have the same pointer to a single FeatureContext
-func newFeatureContext() *featureContext {
+func newFeatureContext(sc *godog.ScenarioContext) *featureContext {
 	fc := &featurecontext.FeatureContext{}
 
 	// every xxxFeatureContext needs to have the pointer to a _single_ / common FeatureContext
 	uc := &featureContext{
 		FeatureContext: fc,
 
-		LoginFeatureContext:       login.NewLoginFeatureContext(fc),
-		PublicShareFeatureContext: publicshare.NewPublicShareFeatureContext(fc),
-		ResourcesFeatureContext:   resources.NewResourcesFeatureContext(fc),
-		SpacesFeatureContext:      spaces.NewSpacesFeatureContext(fc),
+		LoginFeatureContext:       login.NewLoginFeatureContext(fc, sc),
+		PublicShareFeatureContext: publicshare.NewPublicShareFeatureContext(fc, sc),
+		ResourcesFeatureContext:   resources.NewResourcesFeatureContext(fc, sc),
+		SpacesFeatureContext:      spaces.NewSpacesFeatureContext(fc, sc),
 	}
 	return uc
-}
-
-// registerSteps registers all given steps during scenario initialization
-func (fc *featureContext) registerSteps(sc *godog.ScenarioContext) {
-	fc.LoginFeatureContext.RegisterSteps(sc)
-	fc.PublicShareFeatureContext.RegisterSteps(sc)
-	fc.ResourcesFeatureContext.RegisterSteps(sc)
-	fc.SpacesFeatureContext.RegisterSteps(sc)
 }

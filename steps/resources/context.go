@@ -10,11 +10,13 @@ type ResourcesFeatureContext struct {
 	*featurecontext.FeatureContext
 }
 
-func NewResourcesFeatureContext(fc *featurecontext.FeatureContext) *ResourcesFeatureContext {
-	return &ResourcesFeatureContext{FeatureContext: fc}
+func NewResourcesFeatureContext(fc *featurecontext.FeatureContext, sc *godog.ScenarioContext) *ResourcesFeatureContext {
+	rfc := &ResourcesFeatureContext{FeatureContext: fc}
+	rfc.Register(sc)
+	return rfc
 }
 
-func (f *ResourcesFeatureContext) RegisterSteps(sc *godog.ScenarioContext) {
+func (f *ResourcesFeatureContext) Register(sc *godog.ScenarioContext) {
 	// steps
 	sc.Step(`^no resource should be listed in the response$`, f.NoResourceShouldBeListedInTheResponse)
 	sc.Step(`^(\d+) resource(?:s)? of type "([^"]*)" should be listed in the response$`, f.ResourceOfTypeShouldBeListedInTheResponse)

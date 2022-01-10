@@ -10,15 +10,16 @@ type LoginFeatureContext struct {
 	*featurecontext.FeatureContext
 }
 
-func NewLoginFeatureContext(fc *featurecontext.FeatureContext) *LoginFeatureContext {
-	return &LoginFeatureContext{FeatureContext: fc}
+func NewLoginFeatureContext(fc *featurecontext.FeatureContext, sc *godog.ScenarioContext) *LoginFeatureContext {
+	lfc := &LoginFeatureContext{FeatureContext: fc}
+	lfc.Register(sc)
+	return lfc
 }
 
-func (f *LoginFeatureContext) RegisterSteps(sc *godog.ScenarioContext) {
+func (f *LoginFeatureContext) Register(sc *godog.ScenarioContext) {
 	// steps
 	sc.Step(`^user "([^"]*)" has logged in with password "([^"]*)"$`, f.UserHasLoggedIn)
 	sc.Step(`^user "([^"]*)" has logged in with the token of the public-share "([^"]*)"$`, f.UserHasLoggedInWithTheTokenOfThePublicshare)
 
 	// cleanup
-
 }
