@@ -6,6 +6,7 @@ require (
 	github.com/cs3org/go-cs3apis v0.0.0-20211214102128-4e8745ab1654
 	github.com/cs3org/reva v1.17.0
 	github.com/cucumber/godog v0.12.2
+	github.com/rs/zerolog v1.26.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.42.0
