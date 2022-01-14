@@ -16,22 +16,17 @@ func (f *ResourcesFeatureContext) UserHasCreatedAResourceOfTypeInTheHomeDirector
 		return err
 	}
 
-	homeRes, err := f.Client.GetHome(
-		ctx,
-		&providerv1beta1.GetHomeRequest{},
-	)
+	homeSpace, err := f.GetHomeSpace(user)
 	if err != nil {
 		return err
-	}
-	if homeRes.Status.Code != rpc.Code_CODE_OK {
-		return helpers.FormatError(homeRes.Status)
 	}
 
 	statHome, err := f.Client.Stat(
 		ctx,
 		&providerv1beta1.StatRequest{
 			Ref: &providerv1beta1.Reference{
-				Path: homeRes.Path,
+				ResourceId: &providerv1beta1.ResourceId{StorageId: homeSpace.Root.StorageId, OpaqueId: homeSpace.Root.OpaqueId},
+				Path: ".",
 			},
 		},
 	)

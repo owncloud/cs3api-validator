@@ -47,18 +47,17 @@ func (f *ResourcesFeatureContext) DeleteResourcesAfterScenario(ctx context.Conte
 }
 
 // emptyTrashAfterScenario empties the trash for all users after running the scenario
-func (f *ResourcesFeatureContext) EmptyTrashAfterScenario(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-
+func (f *ResourcesFeatureContext) EmptyTrashAfterScenario(ctx context.Context, sc *godog.Scenario, errsctx error) (context.Context, error) {
 	for u := range f.Users {
+		if u == "anonymous" {
+			continue
+		}
 		reqctx, err := f.GetAuthContext(u)
 		if err != nil {
 			continue
 		}
 
-		homeResp, err := f.Client.GetHome(
-			ctx,
-			&providerv1beta1.GetHomeRequest{},
-		)
+		homeSpace, err := f.GetHomeSpace(u)
 
 		if err != nil {
 			continue
@@ -69,7 +68,8 @@ func (f *ResourcesFeatureContext) EmptyTrashAfterScenario(ctx context.Context, s
 			reqctx,
 			&providerv1beta1.PurgeRecycleRequest{
 				Ref: &providerv1beta1.Reference{
-					Path: homeResp.Path,
+					ResourceId: &providerv1beta1.ResourceId{OpaqueId: homeSpace.Root.OpaqueId, StorageId: homeSpace.Root.OpaqueId},
+					Path: ".",
 				},
 			},
 		)

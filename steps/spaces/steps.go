@@ -23,12 +23,27 @@ func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpace(user string) error {
 	if err != nil {
 		return err
 	}
-	if resp.Status.Code != rpc.Code_CODE_OK {
+	if resp.Status.Code != rpc.Code_CODE_OK && resp.Status.Code != rpc.Code_CODE_ALREADY_EXISTS {
 		return helpers.FormatError(resp.Status)
 	}
-
-	f.Response = resp
-
+	var filters []*providerv1beta1.ListStorageSpacesRequest_Filter
+	filterHome := &providerv1beta1.ListStorageSpacesRequest_Filter{
+		Type: providerv1beta1.ListStorageSpacesRequest_Filter_TYPE_SPACE_TYPE,
+		Term: &providerv1beta1.ListStorageSpacesRequest_Filter_SpaceType{
+			SpaceType: "personal",
+		},
+	}
+	filters = append(filters, filterHome)
+	homeResp, err := f.Client.ListStorageSpaces(
+		ctx,
+		&providerv1beta1.ListStorageSpacesRequest{
+			Filters: filters,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	f.Response = homeResp
 	return nil
 }
 
@@ -40,7 +55,9 @@ func (f *SpacesFeatureContext) UserListsAllAvailableSpaces(user string) error {
 
 	resp, err := f.Client.ListStorageSpaces(
 		ctx,
-		&providerv1beta1.ListStorageSpacesRequest{},
+		&providerv1beta1.ListStorageSpacesRequest{
+			Filters: nil,
+		},
 	)
 	if err != nil {
 		return err
