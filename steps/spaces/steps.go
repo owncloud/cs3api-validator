@@ -53,11 +53,19 @@ func (f *SpacesFeatureContext) UserListsAllAvailableSpaces(user string) error {
 		return err
 	}
 
+	// TODO find out why it fails without any filter
+	var filters []*providerv1beta1.ListStorageSpacesRequest_Filter
+	filterHome := &providerv1beta1.ListStorageSpacesRequest_Filter{
+		Type: providerv1beta1.ListStorageSpacesRequest_Filter_TYPE_OWNER,
+		Term: &providerv1beta1.ListStorageSpacesRequest_Filter_Owner{
+			Owner: f.Users[user].User.Id,
+		},
+	}
+	filters = append(filters, filterHome)
+
 	resp, err := f.Client.ListStorageSpaces(
 		ctx,
-		&providerv1beta1.ListStorageSpacesRequest{
-			Filters: nil,
-		},
+		&providerv1beta1.ListStorageSpacesRequest{Filters: filters},
 	)
 	if err != nil {
 		return err
