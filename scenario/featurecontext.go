@@ -19,10 +19,6 @@ type featureContext struct {
 	*spaces.SpacesFeatureContext
 }
 
-type StepsRegistrar interface {
-	Register(*godog.ScenarioContext)
-}
-
 // newFeatureContext returns a new feature context for the scenario initialization
 // and makes sure that all contexts have the same pointer to a single FeatureContext
 func newFeatureContext(sc *godog.ScenarioContext) *featureContext {

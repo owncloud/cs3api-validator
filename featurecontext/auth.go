@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// getAuthContext uses the access token from the Feature Context
+// GetAuthContext uses the access token from the Feature Context
 // to create a context for the cs3api request
 func (f *FeatureContext) GetAuthContext(u string) (context.Context, error) {
 	ctx := context.Background()

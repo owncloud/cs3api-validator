@@ -1,11 +1,13 @@
 package spaces
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
+	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
 	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
 )
@@ -52,20 +54,23 @@ func (f *SpacesFeatureContext) UserListsAllAvailableSpaces(user string) error {
 	if err != nil {
 		return err
 	}
-
-	// TODO find out why it fails without any filter
-	var filters []*providerv1beta1.ListStorageSpacesRequest_Filter
-	filterHome := &providerv1beta1.ListStorageSpacesRequest_Filter{
-		Type: providerv1beta1.ListStorageSpacesRequest_Filter_TYPE_OWNER,
-		Term: &providerv1beta1.ListStorageSpacesRequest_Filter_Owner{
-			Owner: f.Users[user].User.Id,
-		},
+	// we need to send empty permissions as a workaround
+	permissions := make(map[string]struct{}, 1)
+	value, err := json.Marshal(permissions)
+	if err != nil {
+		return err
 	}
-	filters = append(filters, filterHome)
 
 	resp, err := f.Client.ListStorageSpaces(
 		ctx,
-		&providerv1beta1.ListStorageSpacesRequest{Filters: filters},
+		&providerv1beta1.ListStorageSpacesRequest{
+			Opaque: &types.Opaque{Map: map[string]*types.OpaqueEntry{
+				"permissions": {
+					Decoder: "json",
+					Value:   value,
+				},
+			}},
+		},
 	)
 	if err != nil {
 		return err
