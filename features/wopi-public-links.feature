@@ -5,7 +5,7 @@ Feature: WOPI server on public links
 
   Background: Public share exists
     Given user "admin" has logged in with password "admin"
-    Given user "admin" has created a resource "public-office-documents" of type "container" in the home directory with the alias "office-documents-resource"
+    Given user "admin" has created a folder "public-office-documents" in the home directory with the alias "office-documents-resource"
     Given user "admin" has created a public-share "public-collaboration" with editor permissions of the resource with the alias "office-documents-resource"
     Given user "anonymous" has logged in with the token of the public-share "public-collaboration"
 

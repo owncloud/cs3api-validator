@@ -9,7 +9,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	"github.com/cs3org/reva/pkg/rgrpc/todo/pool"
 )
 
@@ -32,5 +31,5 @@ func (f *FeatureContext) Init(endpoint string, httpInsecure bool) {
 
 	f.Users = make(map[string]User)
 	f.PublicSharesToken = make(map[string]string)
-	f.ResourceReferences = make(map[string]*providerv1beta1.Reference)
+	f.ResourceReferences = make(map[string]ResourceAlias)
 }

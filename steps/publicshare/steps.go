@@ -28,7 +28,7 @@ func (f *PublicShareFeatureContext) UserHasCreatedAPublicshareWithEditorPermissi
 	statResp, err := f.Client.Stat(
 		ctx,
 		&providerv1beta1.StatRequest{
-			Ref: resourceRef,
+			Ref: resourceRef.Ref,
 		},
 	)
 	if err != nil {
