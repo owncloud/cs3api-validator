@@ -16,12 +16,12 @@ func NewPublicShareFeatureContext(fc *featurecontext.FeatureContext, sc *godog.S
 	return psc
 }
 
-func (f *PublicShareFeatureContext) Register(sc *godog.ScenarioContext) {
+func (f *PublicShareFeatureContext) Register(ctx *godog.ScenarioContext) {
 	// steps
-	sc.Step(`^user "([^"]*)" has created a public-share "([^"]*)" with editor permissions of the resource with the alias "([^"]*)"$`, f.UserHasCreatedAPublicshareWithEditorPermissionsOfTheResourceWithTheAlias)
-	sc.Step(`^user "([^"]*)" has uploaded an empty file "([^"]*)" to the public-share "([^"]*)"$`, f.UserHasUploadedAnEmptyFileToThePublicshare)
-	sc.Step(`^user "([^"]*)" lists all resources in the public-share "([^"]*)"$`, f.UserListsAllResourcesInThePublicshare)
+	ctx.Step(`^user "([^"]*)" has created a public-share "([^"]*)" with editor permissions of the resource with the alias "([^"]*)"$`, f.UserHasCreatedAPublicshareWithEditorPermissionsOfTheResourceWithTheAlias)
+	ctx.Step(`^user "([^"]*)" has uploaded an empty file "([^"]*)" to the public-share "([^"]*)"$`, f.UserHasUploadedAnEmptyFileToThePublicshare)
+	ctx.Step(`^user "([^"]*)" lists all resources in the public-share "([^"]*)"$`, f.UserListsAllResourcesInThePublicshare)
 
 	// cleanup
-	sc.After(f.DeletePublicShares)
+	ctx.After(f.DeletePublicShares)
 }

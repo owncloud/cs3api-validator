@@ -15,7 +15,7 @@ type User struct {
 }
 
 type ResourceAlias struct {
-	Ref *providerv1beta1.Reference
+	Ref  *providerv1beta1.Reference
 	Info *providerv1beta1.ResourceInfo
 }
 
@@ -35,5 +35,4 @@ type FeatureContext struct {
 	// remember created resources for deprovisioning
 	CreatedSpaces             []*providerv1beta1.StorageSpace
 	CreatedResourceReferences []*providerv1beta1.Reference
-	RememberedEtag string
 }

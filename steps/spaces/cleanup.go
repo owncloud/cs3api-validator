@@ -17,7 +17,7 @@ func (f *SpacesFeatureContext) DeleteSpacesAfterScenario(ctx context.Context, sc
 		//}
 
 		// TODO: Deprovision storage spaces as soon as implemented
-		return nil, godog.ErrUndefined
+		//return nil, godog.ErrUndefined
 
 		//resp, err := f.Client.DeleteStorageSpace(
 		//	reqctx,

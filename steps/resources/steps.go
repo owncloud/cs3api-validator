@@ -15,6 +15,7 @@ import (
 	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
 )
+
 const (
 	// HeaderTokenTransport holds the header key for the reva transfer token
 	// "github.com/cs3org/reva/internal/http/services/datagateway" is internal so we redeclare it here
@@ -37,10 +38,10 @@ func (f *ResourcesFeatureContext) UserHasCreatedAFolderOfTypeInTheHomeDirectoryW
 		&providerv1beta1.StatRequest{
 			Ref: &providerv1beta1.Reference{
 				ResourceId: &providerv1beta1.ResourceId{
-					OpaqueId: homeSpace.Root.OpaqueId,
+					OpaqueId:  homeSpace.Root.OpaqueId,
 					StorageId: homeSpace.Root.StorageId,
 				},
-				Path:       ".",
+				Path: ".",
 			},
 		},
 	)
@@ -92,7 +93,7 @@ func (f *ResourcesFeatureContext) UserHasCreatedAFolderOfTypeInTheHomeDirectoryW
 	// store reference only if non empty alias
 	if resourceAlias != "" {
 		f.ResourceReferences[resourceAlias] = featurecontext.ResourceAlias{
-			Ref: resourceRef,
+			Ref:  resourceRef,
 			Info: sRes.Info,
 		}
 	}
@@ -116,10 +117,10 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 		&providerv1beta1.StatRequest{
 			Ref: &providerv1beta1.Reference{
 				ResourceId: &providerv1beta1.ResourceId{
-					OpaqueId: homeSpace.Root.OpaqueId,
+					OpaqueId:  homeSpace.Root.OpaqueId,
 					StorageId: homeSpace.Root.StorageId,
 				},
-				Path:       ".",
+				Path: ".",
 			},
 		},
 	)
@@ -151,7 +152,7 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 	}
 
 	uReq := &providerv1beta1.InitiateFileUploadRequest{
-		Ref:    resourceRef,
+		Ref: resourceRef,
 	}
 
 	// where to upload the file?
@@ -193,7 +194,7 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 			return fmt.Errorf("partial content")
 		}
 		if httpRes.StatusCode == errtypes.StatusChecksumMismatch {
-			return fmt. Errorf("checksum mismatch")
+			return fmt.Errorf("checksum mismatch")
 		}
 		return fmt.Errorf("PUT request to datagateway failed")
 	}
@@ -269,23 +270,19 @@ func (f *ResourcesFeatureContext) ResourceOfTypeShouldBeListedInTheResponse(numb
 	return helpers.AssertExpectedAndActual(assert.Equal, number, matchingResources)
 }
 
-func (f *ResourcesFeatureContext) userRemembersTheEtagOfTheSpaceWithName(user string, spaceName string) error {
+func (f *ResourcesFeatureContext) userRemembersTheFileInfoOfTheResourceWithTheAlias(user string, alias string) error {
 	reqctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
-	homeSpace, err := f.GetHomeSpace(user)
-	if err != nil {
-		return err
+
+	resource, ok := f.ResourceReferences[alias]
+	if !ok {
+		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
 	}
 
-	ref := providerv1beta1.Reference{ResourceId: &providerv1beta1.ResourceId{
-		StorageId:            homeSpace.Root.StorageId,
-		OpaqueId:             homeSpace.Root.OpaqueId,
-	}}
-
 	resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
-		Ref: &ref,
+		Ref: resource.Ref,
 	})
 	if err != nil {
 		return err
@@ -293,6 +290,61 @@ func (f *ResourcesFeatureContext) userRemembersTheEtagOfTheSpaceWithName(user st
 	if resp.Status.Code != rpc.Code_CODE_OK {
 		return helpers.FormatError(resp.Status)
 	}
-	f.RememberedEtag = resp.Info.Etag
+	f.ResourceReferences[alias] = featurecontext.ResourceAlias{Ref: resource.Ref, Info: resp.Info}
 	return nil
+}
+
+func (f *ResourcesFeatureContext) forUserTheEtagOfTheResourceWithTheAliasShouldHaveChanged(user string, alias string, not string) error {
+	reqctx, err := f.GetAuthContext(user)
+	if err != nil {
+		return err
+	}
+
+	resource, ok := f.ResourceReferences[alias]
+	if !ok {
+		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
+	}
+	resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+		Ref: resource.Ref,
+	})
+	if err != nil {
+		return err
+	}
+	if resp.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(resp.Status)
+	}
+
+	var assertion helpers.ExpectedAndActualAssertion
+	switch not {
+	// not have changed is equal
+	case "not":
+		assertion = assert.Equal
+	default:
+		assertion = assert.NotEqual
+	}
+
+	return helpers.AssertExpectedAndActual(assertion, resource.Info.Etag, resp.Info.Etag)
+}
+
+func (f *ResourcesFeatureContext) forUserTheTreesizeOfTheResourceWithTheAliasShouldBe(user string, alias string, size int) error {
+	reqctx, err := f.GetAuthContext(user)
+	if err != nil {
+		return err
+	}
+
+	resource, ok := f.ResourceReferences[alias]
+	if !ok {
+		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
+	}
+	resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+		Ref: resource.Ref,
+	})
+	if err != nil {
+		return err
+	}
+	if resp.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(resp.Status)
+	}
+
+	return helpers.AssertExpectedAndActual(assert.Equal, resp.Info.Size, uint64(size))
 }
