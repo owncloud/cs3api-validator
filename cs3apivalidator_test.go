@@ -47,5 +47,4 @@ func TestMain(m *testing.M) {
 
 // Empty test to suppres the "no tests found" warning
 func TestOne(t *testing.T) {
-	return
 }
