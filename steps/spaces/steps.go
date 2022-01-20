@@ -8,16 +8,18 @@ import (
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
+	"github.com/owncloud/cs3api-validator/featurecontext"
 	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
 )
 
-func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpace(user string) error {
+func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpaceWithAlias(user string, alias string) error {
 	ctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err
 	}
 
+	// Call create home
 	resp, err := f.Client.CreateHome(
 		ctx,
 		&providerv1beta1.CreateHomeRequest{},
@@ -35,7 +37,13 @@ func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpace(user string) error {
 			SpaceType: "personal",
 		},
 	}
-	filters = append(filters, filterHome)
+	filterUser := &providerv1beta1.ListStorageSpacesRequest_Filter{
+		Type: providerv1beta1.ListStorageSpacesRequest_Filter_TYPE_OWNER,
+		Term: &providerv1beta1.ListStorageSpacesRequest_Filter_Owner{
+			Owner: f.Users[user].User.Id,
+		},
+	}
+	filters = append(filters, filterHome, filterUser)
 	homeResp, err := f.Client.ListStorageSpaces(
 		ctx,
 		&providerv1beta1.ListStorageSpacesRequest{
@@ -46,6 +54,39 @@ func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpace(user string) error {
 		return err
 	}
 	f.Response = homeResp
+	personalRef := &providerv1beta1.Reference{
+		ResourceId: &providerv1beta1.ResourceId{
+			OpaqueId:  homeResp.StorageSpaces[0].Root.OpaqueId,
+			StorageId: homeResp.StorageSpaces[0].Root.StorageId,
+		},
+		Path: ".",
+	}
+	statPersonal, err := f.Client.Stat(
+		ctx,
+		&providerv1beta1.StatRequest{Ref: personalRef},
+	)
+	if err != nil {
+		return err
+	}
+	if statPersonal.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(statPersonal.Status)
+	}
+	// store reference to delete on cleanup
+	f.CreatedSpaces = append(f.CreatedSpaces, homeResp.StorageSpaces[0])
+
+	// store reference only if non-empty alias
+	if alias != "" {
+		f.ResourceReferences[alias] = featurecontext.ResourceAlias{
+			Ref: &providerv1beta1.Reference{
+				ResourceId: &providerv1beta1.ResourceId{
+					OpaqueId:  homeResp.StorageSpaces[0].Root.OpaqueId,
+					StorageId: homeResp.StorageSpaces[0].Root.StorageId,
+				},
+				Path: ".",
+			},
+			Info: statPersonal.Info,
+		}
+	}
 	return nil
 }
 

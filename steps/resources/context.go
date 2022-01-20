@@ -16,13 +16,17 @@ func NewResourcesFeatureContext(fc *featurecontext.FeatureContext, sc *godog.Sce
 	return rfc
 }
 
-func (f *ResourcesFeatureContext) Register(sc *godog.ScenarioContext) {
+func (f *ResourcesFeatureContext) Register(ctx *godog.ScenarioContext) {
 	// steps
-	sc.Step(`^no resource should be listed in the response$`, f.NoResourceShouldBeListedInTheResponse)
-	sc.Step(`^(\d+) resource(?:s)? of type "([^"]*)" should be listed in the response$`, f.ResourceOfTypeShouldBeListedInTheResponse)
-	sc.Step(`^user "([^"]*)" has created a resource "([^"]*)" of type "([^"]*)" in the home directory with the alias "([^"]*)"$`, f.UserHasCreatedAResourceOfTypeInTheHomeDirectoryWithTheAlias)
+	ctx.Step(`^no resource should be listed in the response$`, f.NoResourceShouldBeListedInTheResponse)
+	ctx.Step(`^(\d+) resource(?:s)? of type "([^"]*)" should be listed in the response$`, f.ResourceOfTypeShouldBeListedInTheResponse)
+	ctx.Step(`^user "([^"]*)" has created a folder "([^"]*)" in the home directory with the alias "([^"]*)"$`, f.UserHasCreatedAFolderOfTypeInTheHomeDirectoryWithTheAlias)
+	ctx.Step(`^user "([^"]*)" has uploaded a file "([^"]*)" with content "([^"]*)" in the home directory with the alias "([^"]*)"$`, f.userHasUploadedAFileWithContentInTheHomeDirectoryWithTheAlias)
+	ctx.Step(`^user "([^"]*)" remembers the fileinfo of the resource with the alias "([^"]*)"$`, f.userRemembersTheFileInfoOfTheResourceWithTheAlias)
+	ctx.Step(`^for user "([^"]*)" the etag of the resource with the alias "([^"]*)" should (not|)\s?have changed$`, f.forUserTheEtagOfTheResourceWithTheAliasShouldHaveChanged)
+	ctx.Step(`^for user "([^"]*)" the treesize of the resource with the alias "([^"]*)" should be (\d+)$`, f.forUserTheTreesizeOfTheResourceWithTheAliasShouldBe)
 
 	// cleanup
-	sc.After(f.DeleteResourcesAfterScenario)
-	sc.After(f.EmptyTrashAfterScenario)
+	ctx.After(f.DeleteResourcesAfterScenario)
+	ctx.After(f.EmptyTrashAfterScenario)
 }

@@ -16,12 +16,12 @@ func NewSpacesFeatureContext(fc *featurecontext.FeatureContext, sc *godog.Scenar
 	return spc
 }
 
-func (f *SpacesFeatureContext) Register(sc *godog.ScenarioContext){
+func (f *SpacesFeatureContext) Register(ctx *godog.ScenarioContext) {
 	// steps
-	sc.Step(`^user "([^"]*)" has created a personal space$`, f.UserHasCreatedAPersonalSpace)
-	sc.Step(`^user "([^"]*)" lists all available spaces$`, f.UserListsAllAvailableSpaces)
-	sc.Step(`^one personal space should be listed in the response$`, f.OnePersonalSpaceShouldBeListedInTheResponse)
+	ctx.Step(`^user "([^"]*)" has created a personal space with the alias "([^"]*)"$`, f.UserHasCreatedAPersonalSpaceWithAlias)
+	ctx.Step(`^user "([^"]*)" lists all available spaces$`, f.UserListsAllAvailableSpaces)
+	ctx.Step(`^one personal space should be listed in the response$`, f.OnePersonalSpaceShouldBeListedInTheResponse)
 
 	// cleanup
-	sc.After(f.DeleteSpacesAfterScenario)
+	ctx.After(f.DeleteSpacesAfterScenario)
 }

@@ -7,6 +7,6 @@ Feature: list home space
     Given user "admin" has logged in with password "admin"
 
   Scenario: First Login
-    Given user "admin" has created a personal space
+    Given user "admin" has created a personal space with the alias "Admin Home"
     When user "admin" lists all available spaces
     Then one personal space should be listed in the response

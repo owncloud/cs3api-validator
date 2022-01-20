@@ -14,6 +14,11 @@ type User struct {
 	User      *userv1beta1.User
 }
 
+type ResourceAlias struct {
+	Ref  *providerv1beta1.Reference
+	Info *providerv1beta1.ResourceInfo
+}
+
 // FeatureContext holds values which are used across test steps
 type FeatureContext struct {
 	Client     gateway.GatewayAPIClient
@@ -25,7 +30,7 @@ type FeatureContext struct {
 	// remember created resources to access them later
 	Users              map[string]User
 	PublicSharesToken  map[string]string
-	ResourceReferences map[string]*providerv1beta1.Reference
+	ResourceReferences map[string]ResourceAlias
 
 	// remember created resources for deprovisioning
 	CreatedSpaces             []*providerv1beta1.StorageSpace
