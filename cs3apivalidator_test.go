@@ -44,3 +44,8 @@ func TestMain(m *testing.M) {
 
 	os.Exit(status)
 }
+
+// Empty test to suppres the "no tests found" warning
+func TestOne(t *testing.T) {
+	return
+}
