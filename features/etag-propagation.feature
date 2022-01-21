@@ -1,5 +1,5 @@
 Feature: Etag and Treesize propagation
-  As as a oCIS user
+  As a user
   I want to edit files in my directory tree
   And let the clients know by changing the root etag
 

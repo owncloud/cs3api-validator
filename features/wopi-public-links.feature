@@ -1,5 +1,5 @@
 Feature: WOPI server on public links
-  As as a oCIS user without account
+  As a user without account
   I want to be able to edit office files on public links
   So that I can collaborate with regular users
 
