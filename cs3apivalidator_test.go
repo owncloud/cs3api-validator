@@ -18,7 +18,7 @@ var opts = godog.Options{
 // Endpoint GRPC address of a running CS3 implementation
 var Endpoint string
 
-// HTTPinsecure controls wether insecure HTTP connections are allowed or not
+// HTTPinsecure controls whether insecure HTTP connections are allowed or not
 var HTTPinsecure bool
 
 func init() {
@@ -45,6 +45,6 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-// Empty test to suppres the "no tests found" warning
+// Empty test to suppress the "no tests found" warning
 func TestOne(t *testing.T) {
 }

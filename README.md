@@ -17,7 +17,7 @@ The cs3api-validator is a tool to test implementations of the [CS3Apis](https://
 
 ### BDD (Behavior driven development)
 
-The cs3api-validator can be run locally in a development phase to develop against a well defined set of basic API operations. It has no external dependencies and runs human readable gherkin test scenarios. This helps to understand the behavior of the CS3APIs being an additional way of documenting the API in combination with the specification.
+The cs3api-validator can be run locally in a development phase to develop against a well-defined set of basic API operations. It has no external dependencies and runs human-readable gherkin test scenarios. This helps to understand the behavior of the CS3APIs being an additional way of documenting the API in combination with the specification.
 
 ### Litmus Testing
 
@@ -127,7 +127,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 ### Run with go test
 
-You can run the tests with the built in go test command. The command passes its flags to the godog test suite. The test suite needs one flag to be set: The network address of the running system under test. It defaults to `localhost:9142` and you can set it using the ``--endpoint``flag.
+You can run the tests with the built-in go test command. The command passes its flags to the godog test suite. The test suite needs one flag to be set: The network address of the running system under test. It defaults to `localhost:9142` and you can set it using the ``--endpoint``flag.
 
 > **_NOTE:_** If you want to use the godog flags you need to prefix them with ``godog.flagname``.
 

@@ -163,9 +163,9 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 	if uRes.Status.Code != rpc.Code_CODE_OK {
 		switch uRes.Status.Code {
 		case rpc.Code_CODE_PERMISSION_DENIED:
-			return fmt.Errorf("permission denied to intitiate upload %v", uReq)
+			return fmt.Errorf("permission denied to initiate upload %v", uReq)
 		case rpc.Code_CODE_NOT_FOUND:
-			return fmt.Errorf("target not found to intitiate upload %v", uReq)
+			return fmt.Errorf("target not found to initiate upload %v", uReq)
 		default:
 			return fmt.Errorf("error occurred during upload %v", uReq)
 		}
