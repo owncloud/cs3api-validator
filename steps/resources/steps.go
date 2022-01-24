@@ -1,8 +1,10 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
@@ -326,6 +328,41 @@ func (f *ResourcesFeatureContext) forUserTheEtagOfTheResourceWithTheAliasShouldH
 	return helpers.AssertExpectedAndActual(assertion, resource.Info.Etag, resp.Info.Etag)
 }
 
+func (f *ResourcesFeatureContext) forUserTheChecksumsOfTheResourceWithTheAliasShouldHaveChanged(user string, alias string, not string) error {
+	reqctx, err := f.GetAuthContext(user)
+	if err != nil {
+		return err
+	}
+
+	resource, ok := f.ResourceReferences[alias]
+	if !ok {
+		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
+	}
+	if resource.Info.Type != providerv1beta1.ResourceType_RESOURCE_TYPE_FILE {
+		return fmt.Errorf("checksums are only available on files")
+	}
+	resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+		Ref: resource.Ref,
+	})
+	if err != nil {
+		return err
+	}
+	if resp.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(resp.Status)
+	}
+
+	var assertion helpers.ExpectedAndActualAssertion
+	switch not {
+	// not have changed is equal
+	case "not":
+		assertion = assert.Equal
+	default:
+		assertion = assert.NotEqual
+	}
+
+	return helpers.AssertExpectedAndActual(assertion, resource.Info.Checksum.GetSum(), resp.Info.Checksum.GetSum())
+}
+
 func (f *ResourcesFeatureContext) forUserTheTreesizeOfTheResourceWithTheAliasShouldBe(user string, alias string, size int) error {
 	reqctx, err := f.GetAuthContext(user)
 	if err != nil {
@@ -347,4 +384,131 @@ func (f *ResourcesFeatureContext) forUserTheTreesizeOfTheResourceWithTheAliasSho
 	}
 
 	return helpers.AssertExpectedAndActual(assert.Equal, resp.Info.Size, uint64(size))
+}
+
+func (f *ResourcesFeatureContext) userHasMovedTheResourceWithAliasInsideASpaceToTarget(user string, alias string, target string) error {
+	reqctx, err := f.GetAuthContext(user)
+	if err != nil {
+		return err
+	}
+
+	// get resource from alias
+	resource, ok := f.ResourceReferences[alias]
+	if !ok {
+		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
+	}
+	// create target reference with new path
+	targetRef := providerv1beta1.Reference{
+		ResourceId: &providerv1beta1.ResourceId{
+			OpaqueId:  resource.Ref.ResourceId.OpaqueId,
+			StorageId: resource.Ref.ResourceId.StorageId,
+		},
+		Path: utils.MakeRelativePath(target),
+	}
+	// check if target already exists
+	tStat, err := f.Client.Stat(
+		reqctx,
+		&providerv1beta1.StatRequest{
+			Ref: &targetRef,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	// abort if target already exists
+	if tStat.Status.Code != rpc.Code_CODE_NOT_FOUND {
+		if tStat.Status.Code == rpc.Code_CODE_OK {
+			return fmt.Errorf("Resource already exists")
+		}
+		return helpers.FormatError(tStat.Status)
+	}
+	// do the move
+	mRes, err := f.Client.Move(
+		reqctx, &providerv1beta1.MoveRequest{
+			Source:      resource.Ref,
+			Destination: &targetRef,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if mRes.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(mRes.Status)
+	}
+
+	// stat the new location
+	sResp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+		Ref: &targetRef,
+	})
+	if err != nil {
+		return err
+	}
+	if sResp.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(sResp.Status)
+	}
+	// store reference to delete on cleanup
+	// we only add the new references, the outdated ones can remain
+	f.CreatedResourceReferences = append(f.CreatedResourceReferences, &targetRef)
+
+	// update the remembered references
+	f.ResourceReferences[alias] = featurecontext.ResourceAlias{Ref: &targetRef, Info: sResp.Info}
+	// update the remembered child aliases
+	return f.updateChildAliases(reqctx, f.ResourceReferences[alias])
+}
+
+// updateChildAliases makes sure that child nodes are up-to-date in the aliases index
+func (f *ResourcesFeatureContext) updateChildAliases(ctx context.Context, parent featurecontext.ResourceAlias) error {
+	if parent.Info.Type != providerv1beta1.ResourceType_RESOURCE_TYPE_CONTAINER {
+		return nil
+	}
+	// use a stack to explore sub-containers breadth-first
+	stack := []string{parent.Ref.Path}
+	for len(stack) > 0 {
+		// retrieve path on top of stack
+		path := stack[len(stack)-1]
+
+		nRef := &providerv1beta1.Reference{
+			ResourceId: parent.Ref.ResourceId,
+			Path:       path,
+		}
+		req := &providerv1beta1.ListContainerRequest{
+			Ref: nRef,
+		}
+		res, err := f.Client.ListContainer(ctx, req)
+		if err != nil {
+			return fmt.Errorf("transport error sending list container grpc request")
+		}
+		if res.Status.Code != rpc.Code_CODE_OK {
+			return fmt.Errorf("error sending list container grpc request")
+		}
+
+		stack = stack[:len(stack)-1]
+
+		// check sub-containers in reverse order and add them to the stack
+		// the reversed order here will produce a more logical sorting of results
+		for i := len(res.Infos) - 1; i >= 0; i-- {
+			res.Infos[i].Path = utils.MakeRelativePath(filepath.Join(nRef.Path, res.Infos[i].Path))
+			currentRef := providerv1beta1.Reference{
+				ResourceId: parent.Ref.ResourceId,
+				Path:       res.Infos[i].Path,
+			}
+			resourceInfo := featurecontext.ResourceAlias{
+				Ref:  &currentRef,
+				Info: res.Infos[i],
+			}
+			if res.Infos[i].Type == providerv1beta1.ResourceType_RESOURCE_TYPE_CONTAINER {
+				stack = append(stack, res.Infos[i].Path)
+			}
+			// add to existing references
+			f.CreatedResourceReferences = append(f.CreatedResourceReferences, &currentRef)
+			// update the existing alias
+			for alias, ri := range f.ResourceReferences {
+				if ri.Info.Id.OpaqueId == res.Infos[i].Id.OpaqueId {
+					f.ResourceReferences[alias] = resourceInfo
+				}
+			}
+		}
+	}
+	return nil
 }

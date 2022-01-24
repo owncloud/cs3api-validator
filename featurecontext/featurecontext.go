@@ -33,6 +33,7 @@ type FeatureContext struct {
 	ResourceReferences map[string]ResourceAlias
 
 	// remember created resources for deprovisioning
+	// if they change during the test runs, we do not need to clean up
 	CreatedSpaces             []*providerv1beta1.StorageSpace
 	CreatedResourceReferences []*providerv1beta1.Reference
 }
