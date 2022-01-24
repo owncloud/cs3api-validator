@@ -13,6 +13,8 @@ import (
 	"github.com/cs3org/reva/pkg/rhttp"
 	"github.com/cs3org/reva/pkg/storage/utils/chunking"
 	"github.com/cs3org/reva/pkg/utils"
+	"github.com/cucumber/godog"
+	"github.com/cucumber/messages-go/v16"
 	"github.com/owncloud/cs3api-validator/featurecontext"
 	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
@@ -272,6 +274,57 @@ func (f *ResourcesFeatureContext) ResourceOfTypeShouldBeListedInTheResponse(numb
 	return helpers.AssertExpectedAndActual(assert.Equal, number, matchingResources)
 }
 
+func (f *ResourcesFeatureContext) theFollowingResourcesShouldBeListedInTheResponse(not string, table *godog.Table) error {
+	list, ok := f.Response.(*providerv1beta1.ListContainerResponse)
+	if !ok {
+		return fmt.Errorf("expected to receive a ListContainerResponse but got something different")
+	}
+	rows := table.Rows
+	if len(rows) == 0 {
+		return fmt.Errorf("empty gherkin table")
+	}
+	if rows[0].Cells[0].Value != "type" && rows[0].Cells[1].Value != "path" {
+		return fmt.Errorf("the first line of the tables needs to be in the form <type><path>")
+	}
+	var rowsValues []*messages.PickleTableRow
+	// collect row values and leave the table header row out
+	rowsValues = append(rowsValues, rows[+1:]...)
+	matchingResources := make(map[string]bool)
+	// loop over container resources
+	for _, ri := range list.Infos {
+		// check if one of expected values has a matching entry in the container resources
+		for _, row := range rowsValues {
+			var resType providerv1beta1.ResourceType
+			switch row.Cells[0].Value {
+			case "file":
+				resType = providerv1beta1.ResourceType_RESOURCE_TYPE_FILE
+			case "container":
+				resType = providerv1beta1.ResourceType_RESOURCE_TYPE_CONTAINER
+			default:
+				return fmt.Errorf("unknown resource type \"%s\"", row.Cells[0].Value)
+			}
+			expectedPath := row.Cells[1].Value
+			if resType == ri.Type && expectedPath == ri.Path {
+				matchingResources[row.Cells[1].Value] = true
+				if not == "not" {
+					msg := fmt.Sprintf("Resource with path %s should not be listed on the response", expectedPath)
+					return helpers.AssertActual(assert.Zero, matchingResources, msg)
+				}
+			}
+		}
+	}
+	if not == "" {
+		for _, candidate := range rowsValues {
+			path := candidate.Cells[1].Value
+			err := helpers.AssertExpectedAndActual(assert.Equal, matchingResources[path], true)
+			if err != nil {
+				return fmt.Errorf("the resource with path %s could not be found in the response", path)
+			}
+		}
+	}
+	return nil
+}
+
 func (f *ResourcesFeatureContext) userRemembersTheFileInfoOfTheResourceWithTheAlias(user string, alias string) error {
 	reqctx, err := f.GetAuthContext(user)
 	if err != nil {
@@ -510,5 +563,37 @@ func (f *ResourcesFeatureContext) updateChildAliases(ctx context.Context, parent
 			}
 		}
 	}
+	return nil
+}
+
+func (f *ResourcesFeatureContext) userListsAllResourcesInsideTheResourceWithAlias(user string, alias string) error {
+	ctx, err := f.GetAuthContext(user)
+	if err != nil {
+		return err
+	}
+	var res featurecontext.ResourceAlias
+	res, ok := f.ResourceReferences[alias]
+	if !ok {
+		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
+	}
+	if res.Info.Type != providerv1beta1.ResourceType_RESOURCE_TYPE_CONTAINER {
+		return fmt.Errorf("we cannot call list inside non-container resources")
+	}
+
+	resp, err := f.Client.ListContainer(
+		ctx,
+		&providerv1beta1.ListContainerRequest{
+			Ref: res.Ref,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if resp.Status.Code != rpc.Code_CODE_OK {
+		return helpers.FormatError(resp.Status)
+	}
+
+	f.Response = resp
+
 	return nil
 }
