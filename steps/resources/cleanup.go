@@ -35,7 +35,8 @@ func (f *ResourcesFeatureContext) DeleteResourcesAfterScenario(ctx context.Conte
 				continue
 			}
 
-			if resp.Status.Code != rpc.Code_CODE_OK {
+			// non-existing resources are not errors
+			if resp.Status.Code != rpc.Code_CODE_OK && resp.Status.Code != rpc.Code_CODE_NOT_FOUND {
 				notYetDeleted = append(notYetDeleted, ref)
 			}
 		}
@@ -69,7 +70,7 @@ func (f *ResourcesFeatureContext) EmptyTrashAfterScenario(ctx context.Context, s
 			&providerv1beta1.PurgeRecycleRequest{
 				Ref: &providerv1beta1.Reference{
 					ResourceId: &providerv1beta1.ResourceId{OpaqueId: homeSpace.Root.OpaqueId, StorageId: homeSpace.Root.OpaqueId},
-					Path: ".",
+					Path:       ".",
 				},
 			},
 		)
