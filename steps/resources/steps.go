@@ -284,7 +284,7 @@ func (f *ResourcesFeatureContext) theFollowingResourcesShouldBeListedInTheRespon
 		return fmt.Errorf("empty gherkin table")
 	}
 	if rows[0].Cells[0].Value != "type" && rows[0].Cells[1].Value != "path" {
-		return fmt.Errorf("the first line of the tables needs to be in the form <type><path>")
+		return fmt.Errorf("the first line of the tables needs to be in the form | <type> | <path> |")
 	}
 	var rowsValues []*messages.PickleTableRow
 	// collect row values and leave the table header row out
