@@ -439,7 +439,7 @@ func (f *ResourcesFeatureContext) forUserTheTreesizeOfTheResourceWithTheAliasSho
 	return helpers.AssertExpectedAndActual(assert.Equal, resp.Info.Size, uint64(size))
 }
 
-func (f *ResourcesFeatureContext) userHasMovedTheResourceWithAliasInsideASpaceToTarget(user string, alias string, target string) error {
+func (f *ResourcesFeatureContext) userMovesTheResourceWithAliasInsideASpaceToTarget(user string, alias string, target string) error {
 	reqctx, err := f.GetAuthContext(user)
 	if err != nil {
 		return err

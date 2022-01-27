@@ -28,7 +28,7 @@ func (f *ResourcesFeatureContext) Register(ctx *godog.ScenarioContext) {
 	ctx.Step(`^for user "([^"]*)" the etag of the resource with the alias "([^"]*)" should (not|)\s?have changed$`, f.forUserTheEtagOfTheResourceWithTheAliasShouldHaveChanged)
 	ctx.Step(`^for user "([^"]*)" the checksums of the resource with the alias "([^"]*)" should (not|)\s?have changed$`, f.forUserTheChecksumsOfTheResourceWithTheAliasShouldHaveChanged)
 	ctx.Step(`^for user "([^"]*)" the treesize of the resource with the alias "([^"]*)" should be (\d+)$`, f.forUserTheTreesizeOfTheResourceWithTheAliasShouldBe)
-	ctx.Step(`^user "([^"]*)" has moved the resource with alias "([^"]*)" inside a space to target "([^"]*)"$`, f.userHasMovedTheResourceWithAliasInsideASpaceToTarget)
+	ctx.Step(`^user "([^"]*)" moves the resource with alias "([^"]*)" inside a space to target "([^"]*)"$`, f.userMovesTheResourceWithAliasInsideASpaceToTarget)
 
 	// cleanup
 	ctx.After(f.DeleteResourcesAfterScenario)

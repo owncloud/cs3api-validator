@@ -37,8 +37,8 @@ Feature: Basic File operations
       | type      | path         |
       | container | A            |
       | file      | testfile.txt |
-    When user "marie" has moved the resource with alias "A" inside a space to target "A-Folder"
-    And user "marie" has moved the resource with alias "testfile" inside a space to target "Test-File.txt"
+    When user "marie" moves the resource with alias "A" inside a space to target "A-Folder"
+    And user "marie" moves the resource with alias "testfile" inside a space to target "Test-File.txt"
     When user "marie" lists all resources inside the resource with alias "Maries Home"
     Then the following resources should be listed in the response:
       | type      | path          |
