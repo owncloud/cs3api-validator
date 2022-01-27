@@ -41,7 +41,7 @@ Feature: Etag and Treesize propagation
     And user "admin" remembers the fileinfo of the resource with the alias "a-sub-folder-B"
     And user "admin" remembers the fileinfo of the resource with the alias "testFolder"
     And user "admin" remembers the fileinfo of the resource with the alias "test2"
-    When user "admin" has moved the resource with alias "a-sub-folder" inside a space to target "a-folder/a-sub-folder-B/a-sub-folder"
+    When user "admin" moves the resource with alias "a-sub-folder" inside a space to target "a-folder/a-sub-folder-B/a-sub-folder"
     Then for user "admin" the etag of the resource with the alias "Admin Home" should have changed
     And for user "admin" the etag of the resource with the alias "a-folder" should have changed
     And for user "admin" the etag of the resource with the alias "a-sub-folder" should not have changed

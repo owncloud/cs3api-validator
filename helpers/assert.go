@@ -19,13 +19,13 @@ type ExpectedAndActualAssertion func(t assert.TestingT, expected, actual interfa
 // assertActual is a helper function to allow the step function to call
 // assertion functions where you want to compare an actual value to a
 // predefined state like nil, empty or true/false.
-//func assertActual(a actualAssertion, actual interface{}, msgAndArgs ...interface{}) error {
-//	var t asserter
-//	a(&t, actual, msgAndArgs...)
-//	return t.err
-//}
-//
-//type actualAssertion func(t assert.TestingT, actual interface{}, msgAndArgs ...interface{}) bool
+func AssertActual(a actualAssertion, actual interface{}, msgAndArgs ...interface{}) error {
+	var t Asserter
+	a(&t, actual, msgAndArgs...)
+	return t.err
+}
+
+type actualAssertion func(t assert.TestingT, actual interface{}, msgAndArgs ...interface{}) bool
 
 // asserter is used to be able to retrieve the error reported by the called assertion
 type Asserter struct {
