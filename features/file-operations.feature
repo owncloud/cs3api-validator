@@ -5,7 +5,7 @@ Feature: Basic File operations
 
   Background: Space Exists
     Given user "marie" has logged in with password "radioactivity"
-    Given user "marie" has created a personal space with the alias "Maries Home"
+    And user "marie" has created a personal space with the alias "Maries Home"
 
     Scenario: Create Folders and files
       Given user "marie" has created a folder "NewFolder" in the home directory with the alias "NewFolder"
