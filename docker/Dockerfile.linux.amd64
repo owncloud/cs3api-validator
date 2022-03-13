@@ -1,4 +1,7 @@
-FROM amd64/alpine:3.14
+FROM amd64/alpine:3.15
+
+ARG VERSION=""
+ARG REVISION=""
 
 RUN apk update && \
 	apk upgrade && \
@@ -14,7 +17,9 @@ LABEL maintainer="ownCloud GmbH <engineering@owncloud.com>" \
   org.opencontainers.image.licenses="Apache-2.0" \
   org.opencontainers.image.documentation="https://github.com/owncloud/cs3api-validator" \
   org.opencontainers.image.url="https://hub.docker.com/r/owncloud/cs3api-validator" \
-  org.opencontainers.image.source="https://github.com/owncloud/cs3api-validator"
+  org.opencontainers.image.source="https://github.com/owncloud/cs3api-validator" \
+  org.opencontainers.image.version="${VERSION}" \
+  org.opencontainers.image.revision="${REVISION}"
 
 RUN mkdir -p /var/lib/cs3api-validator && \
     chmod -R 777 /var/lib/cs3api-validator
@@ -25,5 +30,5 @@ WORKDIR /var/lib/cs3api-validator
 ENTRYPOINT ["/usr/bin/cs3api-validator", "."]
 CMD []
 
-COPY features/* /var/lib/cs3api-validator
-COPY cs3api-validator.test /usr/bin/cs3api-validator
+COPY features/* /var/lib/cs3api-validator/
+COPY cs3api-validator-linux-amd64.test /usr/bin/cs3api-validator
