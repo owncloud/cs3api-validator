@@ -27,7 +27,12 @@ def beforePipelines(ctx):
     return linting(ctx)
 
 def stagePipelines(ctx):
-    return tests(ctx) +dockerRelease(ctx, "amd64")
+    testPipelines = tests(ctx)
+    dockerReleasePipelines = dockerRelease(ctx, "amd64")
+    dependsOn(testPipelines, dockerReleasePipelines)
+    dockerAfterRelease = releaseDockerReadme(ctx) + releaseDockerManifest(ctx)
+    dependsOn(dockerReleasePipelines, dockerAfterRelease)
+    return testPipelines + dockerReleasePipelines + dockerAfterRelease
 
 def afterPipelines(ctx):
     return [
@@ -238,7 +243,7 @@ def dockerRelease(ctx, arch):
                 },
             },
         ],
-        "depends_on": getPipelineNames(linting(ctx) + tests(ctx)),
+        "depends_on": [],
         "trigger": {
             "ref": [
                 "refs/tags/v*",
@@ -253,6 +258,86 @@ def dockerRelease(ctx, arch):
         ],
     }
 
+    for branch in config['branches']:
+        result['trigger']['ref'].append('refs/heads/%s' % branch)
+
+    pipelines.append(result)
+    return pipelines
+
+def releaseDockerManifest(ctx):
+    pipelines = []
+    result = {
+        "kind": "pipeline",
+        "type": "docker",
+        "name": "manifest",
+        "platform": {
+            "os": "linux",
+            "arch": "amd64",
+        },
+        "steps": [
+            {
+                "name": "execute",
+                "image": "plugins/manifest:1",
+                "settings": {
+                    "username": {
+                        "from_secret": "docker_username",
+                    },
+                    "password": {
+                        "from_secret": "docker_password",
+                    },
+                    "spec": "docker/manifest.tmpl",
+                    "auto_tag": True,
+                    "ignore_missing": True,
+                },
+            },
+        ],
+        "depends_on": [],
+        "trigger": {
+            "ref": [
+                "refs/tags/v*",
+            ],
+        },
+    }
+    for branch in config['branches']:
+        result['trigger']['ref'].append('refs/heads/%s' % branch)
+
+    pipelines.append(result)
+    return pipelines
+
+def releaseDockerReadme(ctx):
+    pipelines = []
+    result = {
+        "kind": "pipeline",
+        "type": "docker",
+        "name": "readme",
+        "platform": {
+            "os": "linux",
+            "arch": "amd64",
+        },
+        "steps": [
+            {
+                "name": "execute",
+                "image": "chko/docker-pushrm:1",
+                "environment": {
+                    "DOCKER_USER": {
+                        "from_secret": "docker_username",
+                    },
+                    "DOCKER_PASS": {
+                        "from_secret": "docker_password",
+                    },
+                    "PUSHRM_TARGET": "owncloud/${DRONE_REPO_NAME}",
+                    "PUSHRM_SHORT": "Docker images for %s" % (ctx.repo.name),
+                    "PUSHRM_FILE": "README.md",
+                },
+            },
+        ],
+        "depends_on": [],
+        "trigger": {
+            "ref": [
+                "refs/tags/v*",
+            ],
+        },
+    }
     for branch in config['branches']:
         result['trigger']['ref'].append('refs/heads/%s' % branch)
 
