@@ -27,12 +27,13 @@ def beforePipelines(ctx):
     return linting(ctx)
 
 def stagePipelines(ctx):
-    testPipelines = tests(ctx)
+    # testPipelines = tests(ctx)
     dockerReleasePipelines = dockerRelease(ctx, "amd64")
-    dependsOn(testPipelines, dockerReleasePipelines)
+    # dependsOn(testPipelines, dockerReleasePipelines)
     dockerAfterRelease = releaseDockerReadme(ctx) + releaseDockerManifest(ctx)
     dependsOn(dockerReleasePipelines, dockerAfterRelease)
-    return testPipelines + dockerReleasePipelines + dockerAfterRelease
+    #return testPipelines + dockerReleasePipelines + dockerAfterRelease
+    return dockerReleasePipelines + dockerAfterRelease
 
 def afterPipelines(ctx):
     return [
