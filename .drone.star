@@ -170,7 +170,8 @@ def ocisService():
             "STORAGE_HOME_DRIVER": "ocis",
             "STORAGE_USERS_DRIVER": "ocis",
             "OCIS_LOG_LEVEL": "error",
-            "STORAGE_GATEWAY_GRPC_ADDR": "0.0.0.0:9142"
+            "STORAGE_GATEWAY_GRPC_ADDR": "0.0.0.0:9142",
+            "IDM_ADMIN_PASSWORD" : "admin",
         },
         "commands": [
             "ocis init --insecure true",
