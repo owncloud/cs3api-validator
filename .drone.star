@@ -173,6 +173,7 @@ def ocisService():
             "STORAGE_GATEWAY_GRPC_ADDR": "0.0.0.0:9142"
         },
         "commands": [
+            "ocis init --insecure true",
             "ocis server",
         ],
     }]
