@@ -169,7 +169,8 @@ def ocisService():
             "OCIS_URL": "https://ocis:9200",
             "OCIS_LOG_LEVEL": "error",
             "GATEWAY_GRPC_ADDR": "0.0.0.0:9142",
-            "IDM_ADMIN_PASSWORD" : "admin",
+            "IDM_ADMIN_PASSWORD": "admin",
+            "IDM_CREATE_DEMO_USERS": True,
         },
         "commands": [
             "ocis init --insecure true",
