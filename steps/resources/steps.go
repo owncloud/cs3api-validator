@@ -41,11 +41,8 @@ func (f *ResourcesFeatureContext) UserHasCreatedAFolderOfTypeInTheHomeDirectoryW
 		ctx,
 		&providerv1beta1.StatRequest{
 			Ref: &providerv1beta1.Reference{
-				ResourceId: &providerv1beta1.ResourceId{
-					OpaqueId:  homeSpace.Root.OpaqueId,
-					StorageId: homeSpace.Root.StorageId,
-				},
-				Path: ".",
+				ResourceId: homeSpace.Root,
+				Path:       ".",
 			},
 		},
 	)
@@ -120,11 +117,8 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 		ctx,
 		&providerv1beta1.StatRequest{
 			Ref: &providerv1beta1.Reference{
-				ResourceId: &providerv1beta1.ResourceId{
-					OpaqueId:  homeSpace.Root.OpaqueId,
-					StorageId: homeSpace.Root.StorageId,
-				},
-				Path: ".",
+				ResourceId: homeSpace.Root,
+				Path:       ".",
 			},
 		},
 	)
@@ -452,11 +446,8 @@ func (f *ResourcesFeatureContext) userMovesTheResourceWithAliasInsideASpaceToTar
 	}
 	// create target reference with new path
 	targetRef := providerv1beta1.Reference{
-		ResourceId: &providerv1beta1.ResourceId{
-			OpaqueId:  resource.Ref.ResourceId.OpaqueId,
-			StorageId: resource.Ref.ResourceId.StorageId,
-		},
-		Path: utils.MakeRelativePath(target),
+		ResourceId: resource.Ref.ResourceId,
+		Path:       utils.MakeRelativePath(target),
 	}
 	// check if target already exists
 	tStat, err := f.Client.Stat(

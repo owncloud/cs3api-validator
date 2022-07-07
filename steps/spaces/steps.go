@@ -55,11 +55,8 @@ func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpaceWithAlias(user string
 	}
 	f.Response = homeResp
 	personalRef := &providerv1beta1.Reference{
-		ResourceId: &providerv1beta1.ResourceId{
-			OpaqueId:  homeResp.StorageSpaces[0].Root.OpaqueId,
-			StorageId: homeResp.StorageSpaces[0].Root.StorageId,
-		},
-		Path: ".",
+		ResourceId: homeResp.StorageSpaces[0].Root,
+		Path:       ".",
 	}
 	statPersonal, err := f.Client.Stat(
 		ctx,
@@ -78,11 +75,8 @@ func (f *SpacesFeatureContext) UserHasCreatedAPersonalSpaceWithAlias(user string
 	if alias != "" {
 		f.ResourceReferences[alias] = featurecontext.ResourceAlias{
 			Ref: &providerv1beta1.Reference{
-				ResourceId: &providerv1beta1.ResourceId{
-					OpaqueId:  homeResp.StorageSpaces[0].Root.OpaqueId,
-					StorageId: homeResp.StorageSpaces[0].Root.StorageId,
-				},
-				Path: ".",
+				ResourceId: homeResp.StorageSpaces[0].Root,
+				Path:       ".",
 			},
 			Info: statPersonal.Info,
 		}
