@@ -167,10 +167,8 @@ def ocisService():
         "detach": True,
         "environment": {
             "OCIS_URL": "https://ocis:9200",
-            "STORAGE_HOME_DRIVER": "ocis",
-            "STORAGE_USERS_DRIVER": "ocis",
             "OCIS_LOG_LEVEL": "error",
-            "STORAGE_GATEWAY_GRPC_ADDR": "0.0.0.0:9142",
+            "GATEWAY_GRPC_ADDR": "0.0.0.0:9142",
             "IDM_ADMIN_PASSWORD" : "admin",
         },
         "commands": [
