@@ -15,25 +15,29 @@ var opts = godog.Options{
 	Format: "pretty", // can define default values
 }
 
-// Endpoint GRPC address of a running CS3 implementation
-var Endpoint string
+// endpoint GRPC address of a running CS3 implementation
+var endpoint string
 
-// HTTPinsecure controls whether insecure HTTP connections are allowed or not
-var HTTPinsecure bool
+// httpInsecure controls whether insecure HTTP connections are allowed or not
+var httpInsecure bool
+
+// grpcTLSMode TLS mode for grpc client connections
+var grpcTLSMode string
 
 func init() {
 	godog.BindCommandLineFlags("godog.", &opts)
 }
 
 func TestMain(m *testing.M) {
-	flag.StringVar(&Endpoint, "endpoint", "localhost:9142", "Endpoint Url and port of a running cs3 implementation")
-	flag.BoolVar(&HTTPinsecure, "http-insecure", true, "Allow insecure HTTP connections")
+	flag.StringVar(&endpoint, "endpoint", "localhost:9142", "Endpoint Url and port of a running cs3 implementation")
+	flag.StringVar(&grpcTLSMode, "grpc-tls-mode", "off", "TLS mode for grpc client connections ('off', 'on' or 'insecure')")
+	flag.BoolVar(&httpInsecure, "http-insecure", true, "Allow insecure HTTP connections")
 	flag.Parse()
 	opts.Paths = flag.Args()
 
 	status := godog.TestSuite{
 		Name:                "cs3apiValidator",
-		ScenarioInitializer: scenario.InitializeScenario(Endpoint, HTTPinsecure),
+		ScenarioInitializer: scenario.InitializeScenario(endpoint, httpInsecure, grpcTLSMode),
 		Options:             &opts,
 	}.Run()
 
