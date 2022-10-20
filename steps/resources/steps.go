@@ -9,10 +9,10 @@ import (
 
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
-	"github.com/cs3org/reva/pkg/errtypes"
-	"github.com/cs3org/reva/pkg/rhttp"
-	"github.com/cs3org/reva/pkg/storage/utils/chunking"
-	"github.com/cs3org/reva/pkg/utils"
+	"github.com/cs3org/reva/v2/pkg/errtypes"
+	"github.com/cs3org/reva/v2/pkg/rhttp"
+	"github.com/cs3org/reva/v2/pkg/storage/utils/chunking"
+	"github.com/cs3org/reva/v2/pkg/utils"
 	"github.com/cucumber/godog"
 	"github.com/cucumber/messages-go/v16"
 	"github.com/owncloud/cs3api-validator/featurecontext"
@@ -22,7 +22,7 @@ import (
 
 const (
 	// HeaderTokenTransport holds the header key for the reva transfer token
-	// "github.com/cs3org/reva/internal/http/services/datagateway" is internal so we redeclare it here
+	// "github.com/cs3org/reva/v2/internal/http/services/datagateway" is internal so we redeclare it here
 	HeaderTokenTransport = "X-Reva-Transfer"
 )
 
@@ -197,10 +197,7 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 		return fmt.Errorf("PUT request to datagateway failed")
 	}
 
-	ok, err := chunking.IsChunked(resourceRef.Path)
-	if err != nil {
-		return err
-	}
+	ok := chunking.IsChunked(resourceRef.Path)
 	if ok {
 		chunk, err := chunking.GetChunkBLOBInfo(resourceRef.Path)
 		if err != nil {

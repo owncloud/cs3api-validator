@@ -9,12 +9,16 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/cs3org/reva/pkg/rgrpc/todo/pool"
+	"github.com/cs3org/reva/v2/pkg/rgrpc/todo/pool"
 )
 
-func (f *FeatureContext) Init(endpoint string, httpInsecure bool) {
+func (f *FeatureContext) Init(endpoint string, httpInsecure bool, grpcTLSMode string) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	client, err := pool.GetGatewayServiceClient(endpoint)
+	tm, err := pool.StringToTLSMode(grpcTLSMode)
+	if err != nil {
+		log.Fatal().Msg("Could not set TLS mode for grpc client")
+	}
+	client, err := pool.GetGatewayServiceClient(endpoint, pool.WithTLSMode(tm))
 	if err != nil {
 		log.Fatal().Msg("Could not initialize a grpc client")
 	}

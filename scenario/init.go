@@ -5,14 +5,19 @@ import (
 )
 
 // Endpoint the address of the grpc cs3api provider
-var Endpoint string
+var endpoint string
+
 // HttpInsecure flag to use insecure transport
-var HttpInsecure bool
+var httpInsecure bool
+
+// TLS mode for grpc client connections
+var grpcTLSMode string
 
 // InitializeScenario wraps to scenario initialization to pass configuration
-func InitializeScenario(endpoint string, httpInsecure bool) func(*godog.ScenarioContext) {
-	Endpoint = endpoint
-	HttpInsecure = httpInsecure
+func InitializeScenario(e string, h bool, g string) func(*godog.ScenarioContext) {
+	endpoint = e
+	httpInsecure = h
+	grpcTLSMode = g
 
 	return initializeScenario
 }
@@ -20,7 +25,8 @@ func InitializeScenario(endpoint string, httpInsecure bool) func(*godog.Scenario
 func initializeScenario(sc *godog.ScenarioContext) {
 	f := newFeatureContext(sc)
 	f.Init(
-		Endpoint,
-		HttpInsecure,
+		endpoint,
+		httpInsecure,
+		grpcTLSMode,
 	)
 }
