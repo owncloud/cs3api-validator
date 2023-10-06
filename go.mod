@@ -3,7 +3,7 @@ module github.com/owncloud/cs3api-validator
 go 1.18
 
 require (
-	github.com/cs3org/go-cs3apis v0.0.0-20221012090518-ef2996678965
+	github.com/cs3org/go-cs3apis v0.0.0-20230727093620-0f4399be4543
 	github.com/cs3org/reva/v2 v2.10.1-0.20221019091055-df0a189e218d
 	github.com/cucumber/godog v0.12.2
 	github.com/cucumber/messages-go/v16 v16.0.1

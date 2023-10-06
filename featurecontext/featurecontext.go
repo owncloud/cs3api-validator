@@ -5,6 +5,7 @@ import (
 
 	gateway "github.com/cs3org/go-cs3apis/cs3/gateway/v1beta1"
 	userv1beta1 "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
+	shareClient "github.com/cs3org/go-cs3apis/cs3/sharing/collaboration/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 )
 
@@ -23,6 +24,7 @@ type ResourceAlias struct {
 type FeatureContext struct {
 	Client     gateway.GatewayAPIClient
 	HTTPClient http.Client
+	ShareClient  shareClient.CollaborationAPIClient
 
 	// remember the last response to check the outcome
 	Response interface{}

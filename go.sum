@@ -43,6 +43,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsr
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/cs3org/go-cs3apis v0.0.0-20221012090518-ef2996678965 h1:y4n2j68LLnvac+zw/al8MfPgO5aQiIwLmHM/JzYN8AM=
 github.com/cs3org/go-cs3apis v0.0.0-20221012090518-ef2996678965/go.mod h1:UXha4TguuB52H14EMoSsCqDj7k8a/t7g4gVP+bgY5LY=
+github.com/cs3org/go-cs3apis v0.0.0-20230727093620-0f4399be4543 h1:IFo6dj0XEOIA6i2baRWMC3vd+fAmuIUAVfSf77ZhoQg=
+github.com/cs3org/go-cs3apis v0.0.0-20230727093620-0f4399be4543/go.mod h1:UXha4TguuB52H14EMoSsCqDj7k8a/t7g4gVP+bgY5LY=
 github.com/cs3org/reva/v2 v2.10.1-0.20221019091055-df0a189e218d h1:pYCrKLmcSF15jwWpougleGIeng+FehQf0LePxhR04kQ=
 github.com/cs3org/reva/v2 v2.10.1-0.20221019091055-df0a189e218d/go.mod h1:lq+LRpBDYU1vHUmJDeK7sGquREciO8GDj5/SYIibMPY=
 github.com/cucumber/gherkin-go/v19 v19.0.3 h1:mMSKu1077ffLbTJULUfM5HPokgeBcIGboyeNUof1MdE=
