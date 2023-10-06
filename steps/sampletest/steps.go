@@ -14,13 +14,15 @@ import (
 )
 
 type CreateShareResult struct {
-	ShareInfo *identityv1beta1.UserId                   // Replace with your actual type
-	Result    *collaborationv1beta1.CreateShareResponse // Replace with the actual response type
+	ResourceInformation *providerv1beta1.ResourceInfo
+	InformationOfSharee *identityv1beta1.UserId
 	Status    *rpc.Status
-	Err       error
+	Error error
 }
 
-func (f *SampleTestFeatureContext) userSharesAFileWithTheFollowingUsers(shareer string, resourceName string, sharees *godog.Table) error {
+var concurentResults []*CreateShareResult
+
+func (f *SampleTestFeatureContext) UserSharesAFileWithTheFollowingUsers(shareer string, resourceName string, sharees *godog.Table) error {
 	ctx, err := f.GetAuthContext(shareer)
 	if err != nil {
 		return err
@@ -57,7 +59,7 @@ func (f *SampleTestFeatureContext) userSharesAFileWithTheFollowingUsers(shareer 
 		collectedShareesInfos = append(collectedShareesInfos, shareeInformations.GetUsers()[0].GetId())
 	}
 
-	// also we need resource information to create a share for a resource to different users
+	// also we need resource information to create a share for different users
 	var res featurecontext.ResourceAlias
 	res, ok := f.ResourceReferences["Admin Home"]
 	if !ok {
@@ -98,13 +100,13 @@ func (f *SampleTestFeatureContext) userSharesAFileWithTheFollowingUsers(shareer 
 		return fmt.Errorf("Resource name " + resourceName + " could not be found in the container " + "Admin Home")
 	}
 
-	// once resourceInformation and the sharees infromation is found then we can make a concurrent share request to the server
+	// once resourceInformation and sharees information is known then we can make a concurrent share request to the server
 	var wg sync.WaitGroup
+	// store each result of the request during concurrent sharing
 	resultChannel := make(chan CreateShareResult, len(collectedShareesInfos))
 
 	for _, UserId := range collectedShareesInfos {
 		wg.Add(1)
-
 		go func(UserId *identityv1beta1.UserId) {
 			defer wg.Done()
 			createShareResponse, err := f.Client.CreateShare(
@@ -126,29 +128,43 @@ func (f *SampleTestFeatureContext) userSharesAFileWithTheFollowingUsers(shareer 
 			)
 
 			result := CreateShareResult{
-				ShareInfo: UserId,
-				Result:    createShareResponse,
-				Err:       err,
-			}
-
-			if err == nil && createShareResponse != nil {
-				result.Status = createShareResponse.GetStatus()
+				ResourceInformation: resourceInfo,
+				InformationOfSharee: UserId,
+				Status:    createShareResponse.GetStatus(),
+				Error: err,
 			}
 			resultChannel <- result
 
 		}(UserId)
 	}
-
 	wg.Wait()
 	close(resultChannel)
 
 	for result := range resultChannel {
-		if result.Err != nil {
-			fmt.Printf("Error for ShareInformation: %+v - %v\n", result.ShareInfo, result.Err)
-		} else {
-			fmt.Printf("Success for ShareInfo: %+v - Status: %s\n", result.ShareInfo, result.Status)
-		}
+		concurentResults = append(concurentResults, &CreateShareResult{
+			ResourceInformation: result.ResourceInformation,
+			InformationOfSharee: result.InformationOfSharee,
+			Status: result.Status,
+			Error:  result.Error,
+		})
 	}
 
 	return nil
 }
+
+func (f *SampleTestFeatureContext) TheConcurrentUserSharingShouldHaveBeenSuccessfull() error {
+	//collect the result summary if there is any error while concurrent sharing
+	var isThereConcurrentError bool
+	var errorSummary string
+	for _, concurentResult := range concurentResults {
+		if concurentResult.Status.Code != rpc.Code_CODE_OK || concurentResult.Error != nil {
+			isThereConcurrentError = true
+			errorSummary = errorSummary + concurentResult.ResourceInformation.Name + " did not get shared to user with id " + concurentResult.InformationOfSharee.OpaqueId + "\n"
+		}
+	}
+	if isThereConcurrentError {
+		return fmt.Errorf(errorSummary)
+	}
+	return nil
+}
+

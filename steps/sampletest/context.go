@@ -18,5 +18,6 @@ func NewSampleTestFeatureContext(fc *featurecontext.FeatureContext, sc *godog.Sc
 
 func (f *SampleTestFeatureContext) Register(ctx *godog.ScenarioContext) {
 	// steps
-	ctx.Step(`^user "([^"]*)" shares a file "([^"]*)" with the following users concurrently$`, f.userSharesAFileWithTheFollowingUsers)
+	ctx.Step(`^user "([^"]*)" shares a file "([^"]*)" with the following users concurrently$`, f.UserSharesAFileWithTheFollowingUsers)
+	ctx.Step(`^the concurrent user sharing should have been successfull$`, f.TheConcurrentUserSharingShouldHaveBeenSuccessfull)
 }
