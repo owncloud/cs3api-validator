@@ -1,4 +1,4 @@
-package sampletest
+package share
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ type CreateShareResult struct {
 
 var concurentResults []*CreateShareResult
 
-func (f *SampleTestFeatureContext) UserSharesAFileWithTheFollowingUsers(shareer string, resourceName string, sharees *godog.Table) error {
+func (f *ShareTestFeatureContext) UserSharesAFileWithTheFollowingUsers(shareer string, resourceName string, sharees *godog.Table) error {
 	ctx, err := f.GetAuthContext(shareer)
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func (f *SampleTestFeatureContext) UserSharesAFileWithTheFollowingUsers(shareer 
 	return nil
 }
 
-func (f *SampleTestFeatureContext) TheConcurrentUserSharingShouldHaveBeenSuccessfull() error {
+func (f *ShareTestFeatureContext) TheConcurrentUserSharingShouldHaveBeenSuccessfull() error {
 	//collect the result summary if there is any error while concurrent sharing
 	var isThereConcurrentError bool
 	var errorSummary string

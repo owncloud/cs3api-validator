@@ -6,8 +6,8 @@ import (
 	"github.com/owncloud/cs3api-validator/steps/login"
 	"github.com/owncloud/cs3api-validator/steps/publicshare"
 	"github.com/owncloud/cs3api-validator/steps/resources"
+	"github.com/owncloud/cs3api-validator/steps/share"
 	"github.com/owncloud/cs3api-validator/steps/spaces"
-	"github.com/owncloud/cs3api-validator/steps/sampletest"
 )
 
 // featureContext embeds all available feature contexts
@@ -18,7 +18,7 @@ type featureContext struct {
 	*publicshare.PublicShareFeatureContext
 	*resources.ResourcesFeatureContext
 	*spaces.SpacesFeatureContext
-	*sampletest.SampleTestFeatureContext
+	*share.ShareTestFeatureContext
 }
 
 // newFeatureContext returns a new feature context for the scenario initialization
@@ -34,7 +34,7 @@ func newFeatureContext(sc *godog.ScenarioContext) *featureContext {
 		PublicShareFeatureContext: publicshare.NewPublicShareFeatureContext(fc, sc),
 		ResourcesFeatureContext:   resources.NewResourcesFeatureContext(fc, sc),
 		SpacesFeatureContext:      spaces.NewSpacesFeatureContext(fc, sc),
-		SampleTestFeatureContext:  sampletest.NewSampleTestFeatureContext(fc, sc),
+		ShareTestFeatureContext:  share.NewShareTestFeatureContext(fc, sc),
 	}
 	return uc
 }
