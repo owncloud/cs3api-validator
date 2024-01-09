@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
@@ -17,6 +18,7 @@ import (
 	"github.com/cucumber/messages-go/v16"
 	"github.com/owncloud/cs3api-validator/featurecontext"
 	"github.com/owncloud/cs3api-validator/helpers"
+	"github.com/owncloud/ocis/v2/services/webdav/pkg/net"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -149,8 +151,10 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 		}
 	}
 
+	length := int64(len(content))
 	uReq := &providerv1beta1.InitiateFileUploadRequest{
-		Ref: resourceRef,
+		Opaque: utils.AppendPlainToOpaque(nil, net.HeaderUploadLength, strconv.FormatInt(length, 10)),
+		Ref:    resourceRef,
 	}
 
 	// where to upload the file?
@@ -169,41 +173,43 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 		}
 	}
 
-	var ep, token string
-	for _, p := range uRes.Protocols {
-		if p.Protocol == "simple" {
-			ep, token = p.UploadEndpoint, p.Token
+	if length > 0 {
+		var ep, token string
+		for _, p := range uRes.Protocols {
+			if p.Protocol == "simple" {
+				ep, token = p.UploadEndpoint, p.Token
+			}
 		}
-	}
-	body := strings.NewReader(content)
-	httpReq, err := rhttp.NewRequest(ctx, http.MethodPut, ep, body)
-	if err != nil {
-		return err
-	}
-	httpReq.Header.Set(HeaderTokenTransport, token)
-
-	httpRes, err := f.HTTPClient.Do(httpReq)
-	if err != nil {
-		return err
-	}
-	defer httpRes.Body.Close()
-	if httpRes.StatusCode != http.StatusOK {
-		if httpRes.StatusCode == http.StatusPartialContent {
-			return fmt.Errorf("partial content")
-		}
-		if httpRes.StatusCode == errtypes.StatusChecksumMismatch {
-			return fmt.Errorf("checksum mismatch")
-		}
-		return fmt.Errorf("PUT request to datagateway failed")
-	}
-
-	ok := chunking.IsChunked(resourceRef.Path)
-	if ok {
-		chunk, err := chunking.GetChunkBLOBInfo(resourceRef.Path)
+		body := strings.NewReader(content)
+		httpReq, err := rhttp.NewRequest(ctx, http.MethodPut, ep, body)
 		if err != nil {
 			return err
 		}
-		sReq = &providerv1beta1.StatRequest{Ref: &providerv1beta1.Reference{Path: chunk.Path}}
+		httpReq.Header.Set(HeaderTokenTransport, token)
+
+		httpRes, err := f.HTTPClient.Do(httpReq)
+		if err != nil {
+			return err
+		}
+		defer httpRes.Body.Close()
+		if httpRes.StatusCode != http.StatusOK {
+			if httpRes.StatusCode == http.StatusPartialContent {
+				return fmt.Errorf("partial content")
+			}
+			if httpRes.StatusCode == errtypes.StatusChecksumMismatch {
+				return fmt.Errorf("checksum mismatch")
+			}
+			return fmt.Errorf("PUT request to datagateway failed")
+		}
+
+		ok := chunking.IsChunked(resourceRef.Path)
+		if ok {
+			chunk, err := chunking.GetChunkBLOBInfo(resourceRef.Path)
+			if err != nil {
+				return err
+			}
+			sReq = &providerv1beta1.StatRequest{Ref: &providerv1beta1.Reference{Path: chunk.Path}}
+		}
 	}
 
 	// stat again to check the new file's metadata

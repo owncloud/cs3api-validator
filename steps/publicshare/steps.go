@@ -1,16 +1,11 @@
 package publicshare
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
-	"net/http"
 
-	gatewayv1beta1 "github.com/cs3org/go-cs3apis/cs3/gateway/v1beta1"
 	rpc "github.com/cs3org/go-cs3apis/cs3/rpc/v1beta1"
 	linkv1beta1 "github.com/cs3org/go-cs3apis/cs3/sharing/link/v1beta1"
 	providerv1beta1 "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
-	"github.com/owncloud/cs3api-validator/constants"
 	"github.com/owncloud/cs3api-validator/helpers"
 )
 
@@ -179,40 +174,6 @@ func (f *PublicShareFeatureContext) UserHasUploadedAnEmptyFileToThePublicshare(u
 	}
 	if resp.Status.Code != rpc.Code_CODE_OK {
 		return helpers.FormatError(resp.Status)
-	}
-
-	var simpleProto *gatewayv1beta1.FileUploadProtocol
-
-	for _, proto := range resp.GetProtocols() {
-		if proto.Protocol == "simple" {
-			simpleProto = proto
-			break
-		}
-	}
-
-	if simpleProto == nil {
-		return errors.New("given CS3 api endpoint doesn't support the simple upload protocol")
-	}
-
-	req, err := http.NewRequest(http.MethodPut, simpleProto.GetUploadEndpoint(), bytes.NewReader([]byte("")))
-	if err != nil {
-		return err
-	}
-	req.Header.Add(constants.TokenTransportHeader, simpleProto.GetToken())
-
-	// TODO: remove me when public link uploads also have a token
-	req.Header.Add(constants.TokenHeader, f.Users[user].RevaToken)
-
-	uploadResponse, err := f.HTTPClient.Do(req)
-	if err != nil {
-		return err
-	}
-	if err = uploadResponse.Body.Close(); err != nil {
-		return err
-	}
-
-	if uploadResponse.StatusCode != 200 {
-		return fmt.Errorf("expected status code 200 for the file upload, but got %d", uploadResponse.StatusCode)
 	}
 
 	f.Response = nil
