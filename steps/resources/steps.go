@@ -18,7 +18,6 @@ import (
 	"github.com/cucumber/messages-go/v16"
 	"github.com/owncloud/cs3api-validator/featurecontext"
 	"github.com/owncloud/cs3api-validator/helpers"
-	"github.com/owncloud/ocis/v2/services/webdav/pkg/net"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -153,7 +152,7 @@ func (f *ResourcesFeatureContext) userHasUploadedAFileWithContentInTheHomeDirect
 
 	length := int64(len(content))
 	uReq := &providerv1beta1.InitiateFileUploadRequest{
-		Opaque: utils.AppendPlainToOpaque(nil, net.HeaderUploadLength, strconv.FormatInt(length, 10)),
+		Opaque: utils.AppendPlainToOpaque(nil, "Upload-Length", strconv.FormatInt(length, 10)),
 		Ref:    resourceRef,
 	}
 

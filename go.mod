@@ -7,7 +7,6 @@ require (
 	github.com/cs3org/reva/v2 v2.10.1-0.20221019091055-df0a189e218d
 	github.com/cucumber/godog v0.12.2
 	github.com/cucumber/messages-go/v16 v16.0.1
-	github.com/owncloud/ocis/v2 v2.0.0-beta2.0.20220929090834-3b95dcc545dc
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.0
