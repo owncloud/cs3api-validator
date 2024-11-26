@@ -2,6 +2,7 @@ package featurecontext
 
 import (
 	"net/http"
+	"time"
 
 	gateway "github.com/cs3org/go-cs3apis/cs3/gateway/v1beta1"
 	userv1beta1 "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
@@ -19,10 +20,19 @@ type ResourceAlias struct {
 	Info *providerv1beta1.ResourceInfo
 }
 
+type Config struct {
+	Endpoint              string
+	HttpInsecure          bool
+	GrpcTLSMode           string
+	AsyncPropagation      bool
+	AsyncPropagationDelay time.Duration
+}
+
 // FeatureContext holds values which are used across test steps
 type FeatureContext struct {
 	Client     gateway.GatewayAPIClient
 	HTTPClient http.Client
+	Config     Config
 
 	// remember the last response to check the outcome
 	Response interface{}

@@ -3,9 +3,11 @@ package main
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
+	"github.com/owncloud/cs3api-validator/featurecontext"
 	"github.com/owncloud/cs3api-validator/scenario"
 	flag "github.com/spf13/pflag"
 )
@@ -15,29 +17,23 @@ var opts = godog.Options{
 	Format: "pretty", // can define default values
 }
 
-// endpoint GRPC address of a running CS3 implementation
-var endpoint string
-
-// httpInsecure controls whether insecure HTTP connections are allowed or not
-var httpInsecure bool
-
-// grpcTLSMode TLS mode for grpc client connections
-var grpcTLSMode string
-
 func init() {
 	godog.BindCommandLineFlags("godog.", &opts)
 }
 
 func TestMain(m *testing.M) {
-	flag.StringVar(&endpoint, "endpoint", "localhost:9142", "Endpoint Url and port of a running cs3 implementation")
-	flag.StringVar(&grpcTLSMode, "grpc-tls-mode", "off", "TLS mode for grpc client connections ('off', 'on' or 'insecure')")
-	flag.BoolVar(&httpInsecure, "http-insecure", true, "Allow insecure HTTP connections")
+	cfg := featurecontext.Config{}
+	flag.StringVar(&cfg.Endpoint, "endpoint", "localhost:9142", "Endpoint Url and port of a running cs3 implementation")
+	flag.StringVar(&cfg.GrpcTLSMode, "grpc-tls-mode", "off", "TLS mode for grpc client connections ('off', 'on' or 'insecure')")
+	flag.BoolVar(&cfg.AsyncPropagation, "async-propagation", false, "Enable async propagation")
+	flag.DurationVar(&cfg.AsyncPropagationDelay, "async-propagation-delay", 200*time.Millisecond, "Delay for async propagation")
+	flag.BoolVar(&cfg.HttpInsecure, "http-insecure", true, "Allow insecure HTTP connections")
 	flag.Parse()
 	opts.Paths = flag.Args()
 
 	status := godog.TestSuite{
 		Name:                "cs3apiValidator",
-		ScenarioInitializer: scenario.InitializeScenario(endpoint, httpInsecure, grpcTLSMode),
+		ScenarioInitializer: scenario.InitializeScenario(cfg),
 		Options:             &opts,
 	}.Run()
 
