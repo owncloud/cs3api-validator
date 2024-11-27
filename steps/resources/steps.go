@@ -15,7 +15,7 @@ import (
 	"github.com/cs3org/reva/v2/pkg/storage/utils/chunking"
 	"github.com/cs3org/reva/v2/pkg/utils"
 	"github.com/cucumber/godog"
-	"github.com/cucumber/messages-go/v16"
+	messages "github.com/cucumber/messages/go/v21"
 	"github.com/owncloud/cs3api-validator/featurecontext"
 	"github.com/owncloud/cs3api-validator/helpers"
 	"github.com/stretchr/testify/assert"
@@ -355,26 +355,46 @@ func (f *ResourcesFeatureContext) forUserTheEtagOfTheResourceWithTheAliasShouldH
 	if !ok {
 		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
 	}
-	resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
-		Ref: resource.Ref,
-	})
-	if err != nil {
-		return err
-	}
-	if resp.Status.Code != rpc.Code_CODE_OK {
-		return helpers.FormatError(resp.Status)
+
+	checkHasChanged := func() error {
+		resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+			Ref: resource.Ref,
+		})
+		if err != nil {
+			return err
+		}
+		if resp.Status.Code != rpc.Code_CODE_OK {
+			return helpers.FormatError(resp.Status)
+		}
+
+		return helpers.AssertExpectedAndActual(assert.NotEqual, resource.Info.Etag, resp.Info.Etag)
 	}
 
-	var assertion helpers.ExpectedAndActualAssertion
-	switch not {
-	// not have changed is equal
-	case "not":
-		assertion = assert.Equal
-	default:
-		assertion = assert.NotEqual
+	checkNotChanged := func() error {
+		resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+			Ref: resource.Ref,
+		})
+		if err != nil {
+			return err
+		}
+		if resp.Status.Code != rpc.Code_CODE_OK {
+			return helpers.FormatError(resp.Status)
+		}
+
+		assertion := assert.Equal
+
+		return helpers.AssertExpectedAndActual(assertion, resource.Info.Etag, resp.Info.Etag)
 	}
 
-	return helpers.AssertExpectedAndActual(assertion, resource.Info.Etag, resp.Info.Etag)
+	if not == "not" {
+		return checkNotChanged()
+	}
+
+	if f.Config.AsyncPropagation {
+		return helpers.Retry(checkHasChanged, 5, f.Config.AsyncPropagationDelay)
+	} else {
+		return checkHasChanged()
+	}
 }
 
 func (f *ResourcesFeatureContext) forUserTheChecksumsOfTheResourceWithTheAliasShouldHaveChanged(user string, alias string, not string) error {
@@ -422,17 +442,25 @@ func (f *ResourcesFeatureContext) forUserTheTreesizeOfTheResourceWithTheAliasSho
 	if !ok {
 		return fmt.Errorf("cannot find key %s in the remembered resource references map", alias)
 	}
-	resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
-		Ref: resource.Ref,
-	})
-	if err != nil {
-		return err
-	}
-	if resp.Status.Code != rpc.Code_CODE_OK {
-		return helpers.FormatError(resp.Status)
-	}
+	check := func() error {
 
-	return helpers.AssertExpectedAndActual(assert.Equal, resp.Info.Size, uint64(size))
+		resp, err := f.Client.Stat(reqctx, &providerv1beta1.StatRequest{
+			Ref: resource.Ref,
+		})
+		if err != nil {
+			return err
+		}
+		if resp.Status.Code != rpc.Code_CODE_OK {
+			return helpers.FormatError(resp.Status)
+		}
+
+		return helpers.AssertExpectedAndActual(assert.Equal, resp.Info.Size, uint64(size))
+	}
+	if f.Config.AsyncPropagation {
+		return helpers.Retry(check, 10, f.Config.AsyncPropagationDelay)
+	} else {
+		return check()
+	}
 }
 
 func (f *ResourcesFeatureContext) userMovesTheResourceWithAliasInsideASpaceToTarget(user string, alias string, target string) error {

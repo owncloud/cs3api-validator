@@ -2,31 +2,19 @@ package scenario
 
 import (
 	"github.com/cucumber/godog"
+	fc "github.com/owncloud/cs3api-validator/featurecontext"
 )
 
 // Endpoint the address of the grpc cs3api provider
-var endpoint string
-
-// HttpInsecure flag to use insecure transport
-var httpInsecure bool
-
-// TLS mode for grpc client connections
-var grpcTLSMode string
+var config fc.Config
 
 // InitializeScenario wraps to scenario initialization to pass configuration
-func InitializeScenario(e string, h bool, g string) func(*godog.ScenarioContext) {
-	endpoint = e
-	httpInsecure = h
-	grpcTLSMode = g
-
+func InitializeScenario(c fc.Config) func(*godog.ScenarioContext) {
+	config = c
 	return initializeScenario
 }
 
 func initializeScenario(sc *godog.ScenarioContext) {
 	f := newFeatureContext(sc)
-	f.Init(
-		endpoint,
-		httpInsecure,
-		grpcTLSMode,
-	)
+	f.Init(config)
 }

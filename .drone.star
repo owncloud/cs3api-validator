@@ -131,7 +131,7 @@ def tests(ctx):
             },
             {
                 "name": "test",
-                "image": "owncloudci/golang:1.21",
+                "image": "owncloudci/golang:1.22",
                 "commands": [
                     "go test --endpoint=ocis:9142 -v",
                 ],
@@ -197,7 +197,7 @@ def dockerRelease(ctx, arch):
         "steps": [
             {
                 "name": "build",
-                "image": "owncloudci/golang:1.21",
+                "image": "owncloudci/golang:1.22",
                 "commands": [
                     "go test -c -o cs3api-validator-linux-%s.test" % (arch),
                 ],
