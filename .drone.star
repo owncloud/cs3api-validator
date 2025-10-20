@@ -46,37 +46,7 @@ def dependsOn(earlierStages, nextStages):
             nextStage['depends_on'].append(earlierStage['name'])
 
 def notify():
-    result = {
-        'kind': 'pipeline',
-        'type': 'docker',
-        'name': 'chat-notifications',
-        'clone': {
-            'disable': True
-        },
-        'steps': [
-            {
-                'name': 'notify-rocketchat',
-                'image': 'plugins/slack:1',
-                'pull': 'always',
-                'settings': {
-                    'webhook': {
-                        'from_secret': config['rocketchat']['from_secret']
-                    },
-                    'channel': config['rocketchat']['channel']
-                }
-            }
-        ],
-        'depends_on': [],
-        'trigger': {
-            'ref': [
-                'refs/tags/**'
-            ],
-            'status': [
-                'success',
-                'failure'
-            ]
-        }
-    }
+    result = {}
 
     for branch in config['branches']:
         result['trigger']['ref'].append('refs/heads/%s' % branch)
