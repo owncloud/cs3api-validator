@@ -19,7 +19,6 @@ def main(ctx):
         print('Errors detected. Review messages above.')
         return []
     dependsOn(before, stages)
-    after = afterPipelines(ctx)
     dependsOn(stages, after)
     return before + stages + after
 
@@ -35,23 +34,10 @@ def stagePipelines(ctx):
     #return testPipelines + dockerReleasePipelines + dockerAfterRelease
     return dockerReleasePipelines + dockerAfterRelease
 
-def afterPipelines(ctx):
-    return [
-        notify()
-    ]
-
 def dependsOn(earlierStages, nextStages):
     for earlierStage in earlierStages:
         for nextStage in nextStages:
             nextStage['depends_on'].append(earlierStage['name'])
-
-def notify():
-    result = {}
-
-    for branch in config['branches']:
-        result['trigger']['ref'].append('refs/heads/%s' % branch)
-
-    return result
 
 def linting(ctx):
     pipelines = []
