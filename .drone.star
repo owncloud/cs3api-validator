@@ -19,9 +19,7 @@ def main(ctx):
         print('Errors detected. Review messages above.')
         return []
     dependsOn(before, stages)
-    after = afterPipelines(ctx)
-    dependsOn(stages, after)
-    return before + stages + after
+    return before + stages
 
 def beforePipelines(ctx):
     return linting(ctx)
@@ -35,53 +33,10 @@ def stagePipelines(ctx):
     #return testPipelines + dockerReleasePipelines + dockerAfterRelease
     return dockerReleasePipelines + dockerAfterRelease
 
-def afterPipelines(ctx):
-    return [
-        notify()
-    ]
-
 def dependsOn(earlierStages, nextStages):
     for earlierStage in earlierStages:
         for nextStage in nextStages:
             nextStage['depends_on'].append(earlierStage['name'])
-
-def notify():
-    result = {
-        'kind': 'pipeline',
-        'type': 'docker',
-        'name': 'chat-notifications',
-        'clone': {
-            'disable': True
-        },
-        'steps': [
-            {
-                'name': 'notify-rocketchat',
-                'image': 'plugins/slack:1',
-                'pull': 'always',
-                'settings': {
-                    'webhook': {
-                        'from_secret': config['rocketchat']['from_secret']
-                    },
-                    'channel': config['rocketchat']['channel']
-                }
-            }
-        ],
-        'depends_on': [],
-        'trigger': {
-            'ref': [
-                'refs/tags/**'
-            ],
-            'status': [
-                'success',
-                'failure'
-            ]
-        }
-    }
-
-    for branch in config['branches']:
-        result['trigger']['ref'].append('refs/heads/%s' % branch)
-
-    return result
 
 def linting(ctx):
     pipelines = []
