@@ -19,8 +19,7 @@ def main(ctx):
         print('Errors detected. Review messages above.')
         return []
     dependsOn(before, stages)
-    dependsOn(stages, after)
-    return before + stages + after
+    return before + stages
 
 def beforePipelines(ctx):
     return linting(ctx)
