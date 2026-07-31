@@ -1,142 +1,129 @@
-# cs3api-validator
+# CS3 API Validator
 
-<img width="100px" src="https://raw.githubusercontent.com/cs3org/logos/master/cs3org/cs3org.png"/>
+<!-- OSPO-managed README | Generated: 2026-04-16 | v2 -->
 
-[![Build Status](https://drone.owncloud.com/api/badges/owncloud/cs3api-validator/status.svg)](https://drone.owncloud.com/owncloud/cs3api-validator)
-[![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE) [![ownCloud OSPO](https://img.shields.io/badge/OSPO-ownCloud-blue)](https://kiteworks.com/opensource) [![Docker Hub](https://img.shields.io/docker/pulls/owncloud)](https://hub.docker.com/r/owncloud/ocis)
 
-## End-to-End Test Suite for the CS3 APIs
+The CS3 API Validator is an end-to-end test suite for implementations of the [CS3 APIs](https://github.com/cs3org/cs3apis). It runs human-readable Gherkin test scenarios against a CS3 API provider, serving both as a BDD development tool and as a litmus test to verify that an implementation complies with the CS3 API specification. The tool requires only the network address of a running CS3 API provider and has no external dependencies beyond Go.
 
-**This tool will receive a lot of changes before version 1.0.0**
+## Part of oCIS
 
-The cs3api-validator is a tool to test implementations of the [CS3Apis](https://github.com/cs3org/cs3apis). It works as standalone software which only needs the address of a running cs3api provider.
+This tool is part of the [ownCloud Infinite Scale (oCIS)](https://github.com/owncloud/ocis) ecosystem and is used to validate CS3 API compliance. It helps keep different CS3 API implementations in sync and fosters interoperability across the [CS3 community](https://cs3community.org/).
 
-## Purpose
+This component is part of the [oCIS Docker image](https://hub.docker.com/r/owncloud/ocis).
 
-### BDD (Behavior driven development)
+## Getting Started
 
-The cs3api-validator can be run locally in a development phase to develop against a well-defined set of basic API operations. It has no external dependencies and runs human-readable gherkin test scenarios. This helps to understand the behavior of the CS3APIs being an additional way of documenting the API in combination with the specification.
+Follow the steps below to run the CS3 API validation suite.
 
-### Litmus Testing
+### Quick Start
 
-This tool makes it possible to confirm that an implementation of the CS3APIs is compliant to the spec and fulfills the basic operations. This helps the CS3 community to keep different implementations in sync and foster compatibility between them.
-
-## Contributions
-
-This is a community driven Open Source Project. We welcome contributions from everyone and we're ready to support you if you have the enthusiasm to contribute.
-
-Please use the [issue tracker](https://github.com/owncloud/cs3api-validator/issues) to report problems or propose changes.
-
-## Developing
-
-### Quick start
-```shell
+```bash
 git clone git@github.com:owncloud/cs3api-validator.git
 cd cs3api-validator
-go test -v # default network addr of cs3api provider is localhost:9142
+go test -v  # default network address is localhost:9142
 ```
 
-### Add features
+### Adding New Test Features
 
-Add new test steps to the feature files in the `features` directory.
-
-```gherkin
-Feature: eat godogs
-  In order to be happy
-  As a hungry gopher
-  I need to be able to eat godogs
-
-  Scenario: Eat 5 out of 12
-    Given there are 12 godogs
-    When I eat 5
-    Then there should be 7 remaining
-```
-Then run ` go run github.com/cucumber/godog/cmd/godog@master` which will output something similar like this
-
-```
-Feature: eat godogs
-  In order to be happy
-  As a hungry gopher
-  I need to be able to eat godogs
-
-  Scenario: Eat 5 out of 12          # features/godogs.feature:6
-    Given there are 12 godogs
-    When I eat 5
-    Then there should be 7 remaining
-
-1 scenarios (1 undefined)
-3 steps (3 undefined)
-220.129µs
-
-You can implement step definitions for undefined steps with these snippets:
-
-func iEat(arg1 int) error {
-        return godog.ErrPending
-}
-
-func thereAreGodogs(arg1 int) error {
-        return godog.ErrPending
-}
-
-func thereShouldBeRemaining(arg1 int) error {
-        return godog.ErrPending
-}
-
-func InitializeScenario(ctx *godog.ScenarioContext) {
-        ctx.Step(`^I eat (\d+)$`, iEat)
-        ctx.Step(`^there are (\d+) godogs$`, thereAreGodogs)
-        ctx.Step(`^there should be (\d+) remaining$`, thereShouldBeRemaining)
-}
-```
-
-Then copy the new step definition stubs to a *_test.go file and implement the steps. In this project we use a FeatureContext struct to share values between the tests steps. In order to do this we need to use a pointer to the FeatureContext as a function receiver in the test step methods.
-
-```go
-func (f *FeatureContext) iEat(arg1 int) error {
-        return godog.ErrPending
-}
-
-func (f *FeatureContext) thereAreGodogs(arg1 int) error {
-        return godog.ErrPending
-}
-
-func (f *FeatureContext) thereShouldBeRemaining(arg1 int) error {
-        return godog.ErrPending
-}
-
-func InitializeScenario(ctx *godog.ScenarioContext) {
-        f := &FeatureContext{}
-        ctx.Step(`^I eat (\d+)$`, f.iEat)
-        ctx.Step(`^there are (\d+) godogs$`, f.thereAreGodogs)
-        ctx.Step(`^there should be (\d+) remaining$`, f.thereShouldBeRemaining)
-}
-```
+Add Gherkin feature files to the `features/` directory, then implement the step definitions in Go. Run `go run github.com/cucumber/godog/cmd/godog@master` to see which steps need implementation.
 
 ## Usage
 
-### Run with go test
+Instructions for running and configuring the CS3 API validation suite:
 
-You can run the tests with the built-in go test command. The command passes its flags to the godog test suite. The test suite needs one flag to be set: The network address of the running system under test. It defaults to `localhost:9142` and you can set it using the ``--endpoint``flag.
+### Running Tests
 
-> **_NOTE:_** If you want to use the godog flags you need to prefix them with ``godog.flagname``.
+Run with the built-in `go test` command. The `--endpoint` flag sets the network address of the system under test (defaults to `localhost:9142`):
 
-#### In a working go environment
+```bash
+go test --endpoint=your-addr:port -v
+```
 
-Run ``go test --endpoint=your-addr:port -v``
+To build a standalone test binary:
 
-#### Build a binary with the tests
+```bash
+go test -c
+./cs3api-validator.test --endpoint=your-addr:port
+```
 
-Run ``go test -c``. This will create a ``cs3api-validator.test`` binary.
+### Filtering with Tags
 
-Execute the tests ``./cs3qpi-validator.test --endpoint=your-addr:port``
+Use [Godog tags](https://github.com/cucumber/godog#tags) to select which features to run:
 
-### Use tags
+```bash
+go test --godog.tags="@smoke" -v
+```
 
-You can use [tags](https://github.com/cucumber/godog#tags) to filter features which should be executed. `--godog.tags=<expression>`
+### Purpose
+
+- **BDD development**: Run locally during development against a well-defined set of basic CS3 API operations. Human-readable Gherkin scenarios serve as both tests and API documentation.
+- **Litmus testing**: Confirm that a CS3 API implementation is spec-compliant and supports basic operations, helping keep different implementations in sync.
+
+### Adding New Features
+
+1. Add Gherkin feature files to the `features/` directory
+2. Run `go run github.com/cucumber/godog/cmd/godog@master` to get step definition stubs
+3. Implement steps in a `*_test.go` file using the `FeatureContext` struct as a receiver for sharing state between steps
+
+## Documentation
+
+- [CS3 API specification](https://github.com/cs3org/cs3apis)
+- [Godog (Go Cucumber)](https://github.com/cucumber/godog)
+- [Gherkin syntax](https://cucumber.io/docs/gherkin/)
+
+## Community & Support
+
+**[Star](https://github.com/owncloud/cs3api-validator)** this repo and **Watch** for release notifications!
+
+- [ownCloud Website](https://owncloud.com)
+- [Community Discussions](https://github.com/orgs/owncloud/discussions)
+- [Matrix Chat](https://app.element.io/#/room/#owncloud:matrix.org)
+- [Documentation](https://doc.owncloud.com)
+- [Enterprise Support](https://owncloud.com/contact-us/)
+- [OSPO Home](https://kiteworks.com/opensource)
+
+## Contributing
+
+We welcome contributions! Please read the [Contributing Guidelines](CONTRIBUTING.md)
+and our [Code of Conduct](CODE_OF_CONDUCT.md) before getting started.
+
+### Workflow
+
+- **Rebase Early, Rebase Often!** We use a rebase workflow. Always rebase on the target branch before submitting a PR.
+- **Dependabot**: Automated dependency updates are managed via Dependabot. Review and merge dependency PRs promptly.
+- **Signed Commits**: All commits **must** be PGP/GPG signed. See [GitHub's signing guide](https://docs.github.com/en/authentication/managing-commit-signature-verification).
+- **DCO Sign-off**: Every commit must carry a `Signed-off-by` line:
+  ```
+  git commit -s -S -m "your commit message"
+  ```
+- **GitHub Actions Policy**: Workflows may only use actions that are (a) owned by `owncloud`, (b) created by GitHub (`actions/*`), or (c) verified in the GitHub Marketplace.
+
+## Security
+
+**Do not open a public GitHub issue for security vulnerabilities.**
+
+Report vulnerabilities at **<https://security.owncloud.com>** -- see [SECURITY.md](SECURITY.md).
+
+Bug bounty: [YesWeHack ownCloud Program](https://yeswehack.com/programs/owncloud-bug-bounty-program)
 
 ## License
 
-Apache-2.0
+This project is licensed under the [Apache-2.0](LICENSE).
 
+## About the ownCloud OSPO
 
+The [Kiteworks Open Source Program Office](https://kiteworks.com/opensource), operating under
+the [ownCloud](https://owncloud.com) brand, launched on May 5, 2026, to steward the open source
+ecosystem around ownCloud's products. The OSPO ensures transparent governance, license compliance,
+community health, and sustainable collaboration between the open source community and
+[Kiteworks](https://www.kiteworks.com), which acquired ownCloud in 2023.
+
+- **OSPO Home**: <https://kiteworks.com/opensource>
+- **GitHub**: <https://github.com/owncloud>
+- **ownCloud**: <https://owncloud.com>
+
+For questions about the OSPO or licensing, contact ospo@kiteworks.com.
+
+> **License status:** This repository is already licensed under Apache-2.0 -- the OSPO target license.
+> No migration is required.
