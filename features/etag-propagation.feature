@@ -33,8 +33,15 @@ Feature: Etag and Treesize propagation
   Scenario: Change etag of personal home and move subtree
     Given user "admin" has created a folder "a-folder/a-sub-folder-B" in the home directory with the alias "a-sub-folder-B"
     And user "admin" has created a folder "a-folder/a-sub-folder/testFolder" in the home directory with the alias "testFolder"
+    And user "admin" remembers the fileinfo of the resource with the alias "Admin Home"
     And user "admin" has created a folder "a-folder/a-sub-folder/testFolder/test2" in the home directory with the alias "test2"
+    # This is needed to make sure that the propagation has happened to the testing file tree before we move the folder
+    And for user "admin" the etag of the resource with the alias "Admin Home" should have changed
+    And user "admin" remembers the fileinfo of the resource with the alias "Admin Home"
     And user "admin" has uploaded a file "a-folder/a-sub-folder/testfile.txt" with content "text" in the home directory with the alias "testfile.txt"
+    # This is needed to make sure that the propagation has happened to the testing file tree before we move the folder
+    And for user "admin" the etag of the resource with the alias "Admin Home" should have changed
+    # Now we have a clean state and can start the actual test
     And user "admin" remembers the fileinfo of the resource with the alias "Admin Home"
     And user "admin" remembers the fileinfo of the resource with the alias "a-folder"
     And user "admin" remembers the fileinfo of the resource with the alias "a-sub-folder"
